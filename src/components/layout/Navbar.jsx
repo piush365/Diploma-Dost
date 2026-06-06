@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { Menu, X, GraduationCap } from 'lucide-react'
+import ddLogo from '../../assets/dd-logo.jpg'
 
 const navLinks = [
   { label: 'Resources',   path: '/resources' },
@@ -26,7 +27,7 @@ export default function Navbar() {
         <Link to="/" className="flex items-center gap-2" onClick={() => setOpen(false)}>
           <div className="w-7 h-7 rounded-lg flex items-center justify-center"
                style={{ background: 'var(--accent)' }}>
-            <GraduationCap size={15} color="#0d0d0d" strokeWidth={2.5} />
+            <img src={ddLogo} alt="Diploma Dost" className="w-8 h-8 rounded-lg" />
           </div>
           <span style={{ fontFamily: 'Sora, sans-serif', fontWeight: 700, fontSize: '0.9rem', color: 'var(--text)' }}>
             Diploma <span style={{ color: 'var(--accent)' }}>Dost</span>
