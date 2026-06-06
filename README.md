@@ -2,7 +2,7 @@
 
 > Your buddy for all 3 years of diploma — free, open source, built by diploma students for diploma students.
 
-[![Live Site](https://img.shields.io/badge/Live%20Site-diplomadost.vercel.app-6C47FF?style=flat-square)](https://diplomadost.vercel.app)
+[![Live Site](https://img.shields.io/badge/Live%20Site-diplomadost.vercel.app-6C47FF?style=flat-square)](https://diploma-dost.vercel.app/)
 [![Contributions Welcome](https://img.shields.io/badge/Contributions-Welcome-0F6E56?style=flat-square)](#contributing)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue?style=flat-square)](LICENSE)
 
