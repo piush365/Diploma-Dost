@@ -19,19 +19,24 @@ export default function Navbar() {
   const { pathname } = useLocation()
 
   return (
-    <nav style={{
-      background: 'rgba(13, 14, 15, 0.85)',
-      borderBottom: '1px solid var(--border)',
-      backdropFilter: 'blur(12px)',
-      WebkitBackdropFilter: 'blur(12px)',
-    }} className="sticky top-0 z-50">
-
+    <nav
+      style={{
+        background: 'rgba(13, 14, 15, 0.85)',
+        borderBottom: '1px solid var(--border)',
+        backdropFilter: 'blur(12px)',
+        WebkitBackdropFilter: 'blur(12px)',
+      }}
+      className="sticky top-0 z-50"
+    >
       <div className="max-w-7xl mx-auto px-6 flex items-center justify-between h-16">
 
-        {/* Logo */}
-        <Link to="/" onClick={() => setOpen(false)}
+        {/* ── Logo ── */}
+        <Link
+          to="/"
+          onClick={() => setOpen(false)}
           className="flex items-center gap-3"
-          style={{ textDecoration: 'none' }}>
+          style={{ textDecoration: 'none' }}
+        >
           <img
             src={ddLogo}
             alt="Diploma Dost"
@@ -64,7 +69,7 @@ export default function Navbar() {
           </div>
         </Link>
 
-        {/* Desktop links */}
+        {/* ── Desktop nav links ── */}
         <div className="hidden md:flex items-center gap-1">
           {navLinks.map(link => {
             const isActive = pathname === link.path
@@ -75,10 +80,10 @@ export default function Navbar() {
                 style={{
                   fontFamily: 'var(--font-ui)',
                   fontWeight: isActive ? 800 : 500,
-                  fontSize: '0.78rem',
+                  fontSize: '0.875rem',
                   color: isActive ? 'var(--accent)' : 'var(--text-muted)',
                   background: isActive ? 'rgba(232, 69, 60, 0.08)' : 'transparent',
-                  padding: '0.4rem 0.75rem',
+                  padding: '0.45rem 0.85rem',
                   borderRadius: '0.5rem',
                   letterSpacing: '-0.01em',
                   transition: 'color 0.2s ease, background 0.2s ease',
@@ -87,7 +92,7 @@ export default function Navbar() {
                 onMouseEnter={e => {
                   if (!isActive) {
                     e.currentTarget.style.color = 'var(--text)'
-                    e.currentTarget.style.background = 'rgba(240, 237, 230, 0.04)'
+                    e.currentTarget.style.background = 'rgba(128, 128, 128, 0.08)'
                   }
                 }}
                 onMouseLeave={e => {
@@ -103,29 +108,36 @@ export default function Navbar() {
           })}
         </div>
 
-        {/* Desktop CTA */}
+        {/* ── Desktop right: CTA ── */}
         <div className="hidden md:flex items-center gap-3">
-          <Link to="/predictor" className="btn-primary" style={{ fontSize: '0.78rem', padding: '0.5rem 1.1rem' }}>
+          <Link
+            to="/predictor"
+            className="btn-primary"
+            style={{ fontSize: '0.875rem', padding: '0.55rem 1.25rem' }}
+          >
             College Predictor
           </Link>
         </div>
 
-        {/* Mobile hamburger */}
-        <button
-          className="md:hidden p-2 rounded-lg"
-          style={{
-            color: 'var(--text-muted)',
-            background: 'transparent',
-            border: 'none',
-            cursor: 'pointer',
-          }}
-          onClick={() => setOpen(!open)}
-        >
-          {open ? <X size={20} /> : <Menu size={20} />}
-        </button>
+        {/* ── Mobile right: hamburger ── */}
+        <div className="md:hidden flex items-center">
+          <button
+            className="p-2 rounded-lg"
+            style={{
+              color: 'var(--text-muted)',
+              background: 'transparent',
+              border: 'none',
+              cursor: 'pointer',
+            }}
+            onClick={() => setOpen(!open)}
+            aria-label={open ? 'Close menu' : 'Open menu'}
+          >
+            {open ? <X size={20} /> : <Menu size={20} />}
+          </button>
+        </div>
       </div>
 
-      {/* Mobile menu */}
+      {/* ── Mobile menu ── */}
       {open && (
         <div
           className="md:hidden px-4 pb-4 flex flex-col gap-1"
@@ -156,7 +168,11 @@ export default function Navbar() {
           })}
 
           {/* Mobile CTA */}
-          <div style={{ marginTop: '0.5rem', paddingTop: '0.75rem', borderTop: '1px solid var(--border)' }}>
+          <div style={{
+            marginTop: '0.5rem',
+            paddingTop: '0.75rem',
+            borderTop: '1px solid var(--border)',
+          }}>
             <Link
               to="/predictor"
               className="btn-primary"

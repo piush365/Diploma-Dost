@@ -1,3 +1,6 @@
+/* ── JetBrains Mono (Google CDN) — @import must be first ── */
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap');
+
 /* ═══════════════════════════════════════════
    DIPLOMA DOST — index.css
    Fonts: Clash Display, Cabinet Grotesk,
@@ -74,15 +77,12 @@
   font-display: swap;
 }
 
-/* ── JetBrains Mono (Google CDN) ── */
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 /* ═══════════════════════════════════════════
-   CSS VARIABLES — Design Tokens
+   CSS VARIABLES — Dark Mode
 ═══════════════════════════════════════════ */
 @layer base {
   :root {
@@ -99,8 +99,8 @@
     --text-muted: #888888;
 
     /* Accents */
-    --accent:      #e8453c;  /* red — primary accent */
-    --accent-lime: #c8f04d;  /* lime — sparingly only */
+    --accent:      #e8453c;
+    --accent-lime: #c8f04d;
 
     /* Font families */
     --font-display: 'ClashDisplay',   sans-serif;
@@ -110,7 +110,9 @@
     --font-mono:    'JetBrains Mono', monospace;
   }
 
-  * {
+  *,
+  *::before,
+  *::after {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
@@ -203,8 +205,8 @@
     color: #f0ede6;
     font-family: var(--font-ui);
     font-weight: 800;
-    font-size: 0.875rem;
-    padding: 0.65rem 1.5rem;
+    font-size: 1rem;
+    padding: 0.75rem 1.75rem;
     border-radius: 0.75rem;
     border: none;
     cursor: pointer;
@@ -226,8 +228,8 @@
     color: var(--text);
     font-family: var(--font-ui);
     font-weight: 500;
-    font-size: 0.875rem;
-    padding: 0.65rem 1.5rem;
+    font-size: 1rem;
+    padding: 0.75rem 1.75rem;
     border-radius: 0.75rem;
     border: 1px solid var(--border);
     cursor: pointer;
@@ -244,4 +246,26 @@
   .bg-surface  { background-color: var(--surface); }
   .bg-surface2 { background-color: var(--surface2); }
   .border-dim  { border-color: var(--border); }
+
+  /* ── YouTube card play overlay ── */
+  a:hover .play-overlay {
+    opacity: 1 !important;
+  }
+
+  /* ── Features grid — fixed columns so 12 items always fill rows cleanly ── */
+  .features-grid {
+    grid-template-columns: repeat(4, 1fr) !important;   /* 4×3 = 12 ✓ */
+  }
+
+  @media (max-width: 900px) {
+    .features-grid {
+      grid-template-columns: repeat(3, 1fr) !important; /* 3×4 = 12 ✓ */
+    }
+  }
+
+  @media (max-width: 560px) {
+    .features-grid {
+      grid-template-columns: repeat(2, 1fr) !important; /* 2×6 = 12 ✓ */
+    }
+  }
 }

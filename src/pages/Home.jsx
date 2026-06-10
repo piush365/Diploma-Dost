@@ -6,18 +6,18 @@ import {
 } from 'lucide-react'
 
 const features = [
-  { icon: BookOpen,      label: 'Resources',    desc: 'PYQs, Notes, Syllabus',          path: '/resources',    },
-  { icon: Map,           label: 'Roadmaps',     desc: 'Career paths for CS/IT',          path: '/roadmaps',     },
-  { icon: Target,        label: 'Predictor',    desc: 'College admission prediction',    path: '/predictor',    },
-  { icon: Lightbulb,     label: 'Projects',     desc: 'ITR, Capstone & micro ideas',     path: '/projects',     },
-  { icon: Trophy,        label: 'DSA & CP',     desc: 'LeetCode, Striver, GFG',         path: '/dsa',          },
-  { icon: PlaySquare,    label: 'YouTube Hub',  desc: 'Best playlists Sem 1–6',          path: '/youtube',      },
-  { icon: Search,        label: 'Internships',  desc: 'Find & apply guide',              path: '/internships',  },
-  { icon: Users,         label: 'Community',    desc: 'Ask seniors, get answers',        path: '/community',    },
-  { icon: Calendar,      label: 'MSBTE Dates',  desc: 'Exam & deadline calendar',        path: '/msbte',        },
-  { icon: GraduationCap, label: 'Scholarships', desc: 'EBC, SC/ST, OBC guides',         path: '/scholarships', },
-  { icon: Briefcase,     label: 'Placement',    desc: 'Resume & interview prep',         path: '/placement',    },
-  { icon: GitBranchIcon, label: 'Open Source',  desc: 'Contribute to real projects',     path: '/opensource',   },
+  { icon: BookOpen,      label: 'Resources',    desc: 'PYQs, Notes, Syllabus',        path: '/resources'    },
+  { icon: Map,           label: 'Roadmaps',     desc: 'Career paths for CS/IT',        path: '/roadmaps'     },
+  { icon: Target,        label: 'Predictor',    desc: 'College admission prediction',  path: '/predictor'    },
+  { icon: Lightbulb,     label: 'Projects',     desc: 'ITR, Capstone & micro ideas',   path: '/projects'     },
+  { icon: Trophy,        label: 'DSA & CP',     desc: 'LeetCode, Striver, GFG',        path: '/dsa'          },
+  { icon: PlaySquare,    label: 'YouTube Hub',  desc: 'Best playlists Sem 1–6',        path: '/youtube'      },
+  { icon: Search,        label: 'Internships',  desc: 'Find & apply guide',            path: '/internships'  },
+  { icon: Users,         label: 'Community',    desc: 'Ask seniors, get answers',      path: '/community'    },
+  { icon: Calendar,      label: 'MSBTE Dates',  desc: 'Exam & deadline calendar',      path: '/msbte'        },
+  { icon: GraduationCap, label: 'Scholarships', desc: 'EBC, SC/ST, OBC guides',        path: '/scholarships' },
+  { icon: Briefcase,     label: 'Placement',    desc: 'Resume & interview prep',       path: '/placement'    },
+  { icon: GitBranchIcon, label: 'Open Source',  desc: 'Contribute to real projects',   path: '/opensource'   },
 ]
 
 const stats = [
@@ -42,7 +42,7 @@ export default function Home() {
         overflow: 'hidden',
       }}>
 
-        {/* subtle top-left noise texture feel via border */}
+        {/* Top accent line */}
         <div style={{
           position: 'absolute',
           top: 0, left: 0, right: 0,
@@ -152,11 +152,7 @@ export default function Home() {
           flexWrap: 'wrap',
         }}>
           {stats.map((s, i) => (
-            <div key={s.label} style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0',
-            }}>
+            <div key={s.label} style={{ display: 'flex', alignItems: 'center', gap: '0' }}>
               <div style={{ paddingRight: '2.5rem' }}>
                 <div style={{
                   fontFamily: 'var(--font-display)',
@@ -234,16 +230,18 @@ export default function Home() {
           </p>
         </div>
 
-        {/* Features grid */}
+        {/* Features grid — 4 cols desktop, 3 tablet, 2 mobile; 12 items = clean 3 rows */}
         <div style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
+          gridTemplateColumns: 'repeat(4, 1fr)',
           gap: '1px',
           border: '1px solid var(--border)',
           borderRadius: '1rem',
           overflow: 'hidden',
           background: 'var(--border)',
-        }}>
+        }}
+          className="features-grid"
+        >
           {features.map(({ icon: Icon, label, desc, path }) => (
             <Link
               key={path}
@@ -261,36 +259,39 @@ export default function Home() {
               }}
               onMouseEnter={e => {
                 e.currentTarget.style.background = 'var(--surface)'
-                e.currentTarget.querySelector('.feature-arrow').style.opacity = '1'
-                e.currentTarget.querySelector('.feature-arrow').style.transform = 'translateX(0)'
-                e.currentTarget.querySelector('.feature-accent-bar').style.transform = 'scaleY(1)'
+                const arrow = e.currentTarget.querySelector('.feature-arrow')
+                const bar = e.currentTarget.querySelector('.feature-accent-bar')
+                if (arrow) { arrow.style.opacity = '1'; arrow.style.transform = 'translateX(0)' }
+                if (bar) bar.style.transform = 'scaleY(1)'
               }}
               onMouseLeave={e => {
                 e.currentTarget.style.background = 'var(--bg)'
-                e.currentTarget.querySelector('.feature-arrow').style.opacity = '0'
-                e.currentTarget.querySelector('.feature-arrow').style.transform = 'translateX(-6px)'
-                e.currentTarget.querySelector('.feature-accent-bar').style.transform = 'scaleY(0)'
+                const arrow = e.currentTarget.querySelector('.feature-arrow')
+                const bar = e.currentTarget.querySelector('.feature-accent-bar')
+                if (arrow) { arrow.style.opacity = '0'; arrow.style.transform = 'translateX(-6px)' }
+                if (bar) bar.style.transform = 'scaleY(0)'
               }}
             >
-              {/* red left border on hover via pseudo — we use a div instead */}
-              <div style={{
-                position: 'absolute',
-                left: 0, top: 0, bottom: 0,
-                width: '2px',
-                background: 'var(--accent)',
-                transform: 'scaleY(0)',
-                transition: 'transform 0.2s ease',
-              }}
+              {/* Red left accent bar on hover */}
+              <div
                 className="feature-accent-bar"
+                style={{
+                  position: 'absolute',
+                  left: 0, top: 0, bottom: 0,
+                  width: '2px',
+                  background: 'var(--accent)',
+                  transform: 'scaleY(0)',
+                  transition: 'transform 0.2s ease',
+                }}
               />
 
-              <Icon size={18} color="var(--text-muted)" strokeWidth={1.5} />
+              <Icon size={22} color="var(--text-muted)" strokeWidth={1.5} />
 
               <div>
                 <div style={{
                   fontFamily: 'var(--font-ui)',
                   fontWeight: 800,
-                  fontSize: '0.875rem',
+                  fontSize: '1rem',
                   color: 'var(--text)',
                   marginBottom: '0.3rem',
                   letterSpacing: '-0.01em',
@@ -299,7 +300,7 @@ export default function Home() {
                 </div>
                 <div style={{
                   fontFamily: 'var(--font-body)',
-                  fontSize: '0.75rem',
+                  fontSize: '0.875rem',
                   color: 'var(--text-muted)',
                   lineHeight: 1.5,
                 }}>
@@ -314,7 +315,7 @@ export default function Home() {
                   alignItems: 'center',
                   gap: '4px',
                   fontFamily: 'var(--font-mono)',
-                  fontSize: '0.65rem',
+                  fontSize: '0.7rem',
                   letterSpacing: '0.08em',
                   color: 'var(--accent)',
                   textTransform: 'uppercase',

@@ -1,6 +1,5 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import Navbar from './components/layout/Navbar'
-
 import Home         from './pages/Home'
 import Resources    from './pages/Resources'
 import Roadmaps     from './pages/Roadmaps'
@@ -19,7 +18,11 @@ import About        from './pages/About'
 export default function App() {
   return (
     <BrowserRouter>
-      <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
+      {/*
+        bg is set on body via CSS var(--bg) in index.css.
+        This div just needs minHeight — no hardcoded color.
+      */}
+      <div style={{ minHeight: '100vh' }}>
         <Navbar />
         <main>
           <Routes>
