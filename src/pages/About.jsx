@@ -4,6 +4,7 @@
 export default function AboutPage() {
   return (
     <div className="max-w-4xl mx-auto px-4 py-16">
+      {/* Page intro */}
       <div className="section-label mb-4">About</div>
       <h1 style={{ fontFamily: 'Sora, sans-serif', fontSize: '2rem', fontWeight: 700, color: 'var(--text)', marginBottom: '1rem' }}>
         👤 About
