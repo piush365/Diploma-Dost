@@ -1,56 +1,149 @@
-import { Link } from 'react-router-dom'
+import { useState, useEffect } from 'react'
 import {
-  ArrowRight, BookOpen, Map, Target, Lightbulb,
-  Trophy, PlaySquare, Search, Users, Calendar,
-  GraduationCap, Briefcase, GitBranchIcon, Zap,
-  CheckCircle, Sparkles, TrendingUp, Code
+  Users, MessageCircle, Send, Loader2,
+  ChevronDown, ChevronUp, Plus, X
 } from 'lucide-react'
+import { supabase } from '../lib/supabase'
 
-const features = [
-  { icon: BookOpen,      label: 'Resources',    desc: 'PYQs, Notes, Syllabus',        path: '/resources'    },
-  { icon: Map,           label: 'Roadmaps',     desc: 'Career paths for CS/IT',        path: '/roadmaps'     },
-  { icon: Target,        label: 'Predictor',    desc: 'College admission prediction',  path: '/predictor'    },
-  { icon: Lightbulb,     label: 'Projects',     desc: 'ITR, Capstone & micro ideas',   path: '/projects'     },
-  { icon: Trophy,        label: 'DSA & CP',     desc: 'LeetCode, Striver, GFG',        path: '/dsa'          },
-  { icon: PlaySquare,    label: 'YouTube Hub',  desc: 'Best playlists Sem 1–6',        path: '/youtube'      },
-  { icon: Search,        label: 'Internships',  desc: 'Find & apply guide',            path: '/internships'  },
-  { icon: Users,         label: 'Community',    desc: 'Ask seniors, get answers',      path: '/community'    },
-  { icon: Calendar,      label: 'MSBTE Dates',  desc: 'Exam & deadline calendar',      path: '/msbte'        },
-  { icon: GraduationCap, label: 'Scholarships', desc: 'EBC, SC/ST, OBC guides',        path: '/scholarships' },
-  { icon: Briefcase,     label: 'Placement',    desc: 'Resume & interview prep',       path: '/placement'    },
-  { icon: GitBranchIcon, label: 'Open Source',  desc: 'Contribute to real projects',   path: '/opensource'   },
-]
+const BRANCHES = ['CS', 'IT', 'Mech', 'Civil', 'Elec', 'ETC']
+const SEMESTERS = [1, 2, 3, 4, 5, 6]
 
-const stats = [
-  { value: '6',    label: 'Branches' },
-  { value: '13+',  label: 'Features' },
-  { value: '100%', label: 'Free' },
-  { value: '∞',    label: 'Resources' },
-]
+export default function Community() {
+  const [questions, setQuestions] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
 
-const highlights = [
-  { icon: Zap, title: 'Lightning Fast', desc: 'Optimized for slow connections. Works offline.' },
-  { icon: Code, title: 'Open Source', desc: 'Contribute code, content, or ideas on GitHub.' },
-  { icon: TrendingUp, title: 'Career Focused', desc: 'From college to campus placement — we cover it all.' },
-  { icon: CheckCircle, title: 'Trusted by 1000s', desc: 'Built by students who got placed. Verified content.' },
-]
+  const [showForm, setShowForm] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  const [form, setForm] = useState({
+    name: '',
+    branch: 'CS',
+    semester: 1,
+    question_text: '',
+  })
 
-export default function Home() {
+  const [expanded, setExpanded] = useState(null)
+  const [answers, setAnswers] = useState({})
+  const [answersLoading, setAnswersLoading] = useState({})
+
+  const [answerForm, setAnswerForm] = useState({ name: '', answer_text: '' })
+  const [answerSubmitting, setAnswerSubmitting] = useState(false)
+
+  useEffect(() => {
+    fetchQuestions()
+  }, [])
+
+  async function fetchQuestions() {
+    setLoading(true)
+    setError(null)
+    const { data, error } = await supabase
+      .from('questions')
+      .select('*')
+      .order('created_at', { ascending: false })
+
+    if (error) {
+      setError(error.message)
+    } else {
+      setQuestions(data || [])
+    }
+    setLoading(false)
+  }
+
+  async function fetchAnswers(questionId) {
+    if (answers[questionId]) return
+    setAnswersLoading(prev => ({ ...prev, [questionId]: true }))
+    const { data, error } = await supabase
+      .from('answers')
+      .select('*')
+      .eq('question_id', questionId)
+      .order('created_at', { ascending: true })
+
+    if (!error) {
+      setAnswers(prev => ({ ...prev, [questionId]: data || [] }))
+    }
+    setAnswersLoading(prev => ({ ...prev, [questionId]: false }))
+  }
+
+  function toggleExpand(questionId) {
+    if (expanded === questionId) {
+      setExpanded(null)
+    } else {
+      setExpanded(questionId)
+      fetchAnswers(questionId)
+      setAnswerForm({ name: '', answer_text: '' })
+    }
+  }
+
+  async function handleSubmitQuestion(e) {
+    e.preventDefault()
+    if (!form.name.trim() || !form.question_text.trim()) return
+
+    setSubmitting(true)
+    const { data, error } = await supabase
+      .from('questions')
+      .insert([{
+        name: form.name.trim(),
+        branch: form.branch,
+        semester: form.semester,
+        question_text: form.question_text.trim(),
+      }])
+      .select()
+
+    if (!error && data) {
+      setQuestions(prev => [data[0], ...prev])
+      setForm({ name: '', branch: 'CS', semester: 1, question_text: '' })
+      setShowForm(false)
+    } else if (error) {
+      setError(error.message)
+    }
+    setSubmitting(false)
+  }
+
+  async function handleSubmitAnswer(e, questionId) {
+    e.preventDefault()
+    if (!answerForm.name.trim() || !answerForm.answer_text.trim()) return
+
+    setAnswerSubmitting(true)
+    const { data, error } = await supabase
+      .from('answers')
+      .insert([{
+        question_id: questionId,
+        name: answerForm.name.trim(),
+        answer_text: answerForm.answer_text.trim(),
+      }])
+      .select()
+
+    if (!error && data) {
+      setAnswers(prev => ({
+        ...prev,
+        [questionId]: [...(prev[questionId] || []), data[0]],
+      }))
+      setAnswerForm({ name: '', answer_text: '' })
+    }
+    setAnswerSubmitting(false)
+  }
+
+  function timeAgo(dateStr) {
+    const diff = Date.now() - new Date(dateStr).getTime()
+    const mins = Math.floor(diff / 60000)
+    if (mins < 1) return 'just now'
+    if (mins < 60) return `${mins}m ago`
+    const hours = Math.floor(mins / 60)
+    if (hours < 24) return `${hours}h ago`
+    const days = Math.floor(hours / 24)
+    if (days < 30) return `${days}d ago`
+    return new Date(dateStr).toLocaleDateString()
+  }
+
   return (
     <div style={{ background: 'var(--bg)' }}>
 
       {/* ── HERO ───────────────────────────────── */}
       <section style={{
-        minHeight: '100vh',
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'center',
-        padding: '0 clamp(1.5rem, 6vw, 7rem)',
+        padding: 'clamp(4rem, 8vw, 6rem) clamp(1.5rem, 6vw, 7rem) clamp(3rem, 6vw, 4rem)',
         position: 'relative',
         overflow: 'hidden',
       }}>
-
-        {/* Top accent line */}
         <div style={{
           position: 'absolute',
           top: 0, left: 0, right: 0,
@@ -59,12 +152,11 @@ export default function Home() {
           opacity: 0.4,
         }} />
 
-        {/* Badge */}
         <div style={{
           display: 'inline-flex',
           alignItems: 'center',
           gap: '0.5rem',
-          marginBottom: '2.5rem',
+          marginBottom: '1.5rem',
           width: 'fit-content',
         }}>
           <span style={{
@@ -81,608 +173,441 @@ export default function Home() {
             textTransform: 'uppercase',
             color: 'var(--text-muted)',
           }}>
-            Free & Open Source — MSBTE K-Scheme
+            Community
           </span>
         </div>
-
-        {/* Main headline */}
-        <h1 style={{
-          fontFamily: 'var(--font-display)',
-          fontWeight: 700,
-          fontSize: 'clamp(3rem, 8vw, 7rem)',
-          lineHeight: 1.0,
-          letterSpacing: '-0.03em',
-          color: 'var(--text)',
-          marginBottom: '0.15em',
-          maxWidth: '900px',
-        }}>
-          Built for diploma
-        </h1>
-
-        <h1 style={{
-          fontFamily: 'var(--font-display)',
-          fontWeight: 700,
-          fontSize: 'clamp(3rem, 8vw, 7rem)',
-          lineHeight: 1.0,
-          letterSpacing: '-0.03em',
-          color: 'var(--text)',
-          marginBottom: '0.15em',
-          maxWidth: '900px',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '0.3em',
-          flexWrap: 'wrap',
-        }}>
-          students.{' '}
-          <span style={{
-            fontFamily: 'var(--font-serif)',
-            fontStyle: 'italic',
-            fontWeight: 400,
-            color: 'var(--accent)',
-            fontSize: 'clamp(2.5rem, 7vw, 6rem)',
-          }}>
-            By them.
-          </span>
-        </h1>
-
-        {/* Subtext */}
-        <p style={{
-          fontFamily: 'var(--font-body)',
-          fontWeight: 400,
-          fontSize: 'clamp(0.9rem, 2vw, 1.05rem)',
-          color: 'var(--text-muted)',
-          lineHeight: 1.7,
-          maxWidth: '460px',
-          marginTop: '2rem',
-          marginBottom: '2.5rem',
-        }}>
-          PYQs, career guidance, college predictor, YouTube playlists —
-          everything a diploma CS/IT student needs. One platform. Zero rupees.
-        </p>
-
-        {/* CTAs */}
-        <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', marginBottom: '5rem' }}>
-          <Link to="/resources" className="btn-primary">
-            Explore Resources <ArrowRight size={15} />
-          </Link>
-          <Link to="/predictor" className="btn-ghost">
-            College Predictor
-          </Link>
-        </div>
-
-        {/* Stats row */}
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '0',
-          borderTop: '1px solid var(--border)',
-          paddingTop: '2rem',
-          flexWrap: 'wrap',
-        }}>
-          {stats.map((s, i) => (
-            <div key={s.label} style={{ display: 'flex', alignItems: 'center', gap: '0' }}>
-              <div style={{ paddingRight: '2.5rem' }}>
-                <div style={{
-                  fontFamily: 'var(--font-display)',
-                  fontWeight: 700,
-                  fontSize: 'clamp(1.5rem, 3vw, 2rem)',
-                  color: 'var(--text)',
-                  lineHeight: 1,
-                }}>
-                  {s.value}
-                </div>
-                <div style={{
-                  fontFamily: 'var(--font-mono)',
-                  fontSize: '0.6rem',
-                  letterSpacing: '0.1em',
-                  textTransform: 'uppercase',
-                  color: 'var(--text-muted)',
-                  marginTop: '4px',
-                }}>
-                  {s.label}
-                </div>
-              </div>
-              {i < stats.length - 1 && (
-                <div style={{
-                  width: '1px',
-                  height: '2rem',
-                  background: 'var(--border)',
-                  marginRight: '2.5rem',
-                }} />
-              )}
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ── WHY DIPLOMA DOST ───────────────────── */}
-      <section style={{
-        padding: 'clamp(4rem, 8vw, 7rem) clamp(1.5rem, 6vw, 7rem)',
-        borderTop: '1px solid var(--border)',
-      }}>
 
         <div style={{
           display: 'flex',
           alignItems: 'flex-end',
           justifyContent: 'space-between',
-          marginBottom: '3.5rem',
           flexWrap: 'wrap',
-          gap: '1rem',
-        }}>
-          <div>
-            <div className="section-label" style={{ marginBottom: '0.75rem' }}>
-              Why us
-            </div>
-            <h2 style={{
-              fontFamily: 'var(--font-display)',
-              fontWeight: 700,
-              fontSize: 'clamp(1.8rem, 4vw, 3rem)',
-              letterSpacing: '-0.03em',
-              color: 'var(--text)',
-              lineHeight: 1.05,
-              maxWidth: '600px',
-            }}>
-              Built by students who got placed
-            </h2>
-          </div>
-          <p style={{
-            fontFamily: 'var(--font-body)',
-            fontSize: '0.875rem',
-            color: 'var(--text-muted)',
-            maxWidth: '280px',
-            lineHeight: 1.7,
-            textAlign: 'right',
-          }}>
-            We know the struggle. We've been there. That's why every resource here is battle-tested.
-          </p>
-        </div>
-
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
           gap: '1.5rem',
         }}>
-          {highlights.map((item, idx) => {
-            const Icon = item.icon
-            return (
+          <div>
+            <h1 style={{
+              fontFamily: 'var(--font-display)',
+              fontWeight: 700,
+              fontSize: 'clamp(2.2rem, 6vw, 4.5rem)',
+              lineHeight: 1.05,
+              letterSpacing: '-0.03em',
+              color: 'var(--text)',
+              marginBottom: '0.6rem',
+              maxWidth: '700px',
+            }}>
+              Ask seniors.{' '}
+              <span style={{
+                fontFamily: 'var(--font-serif)',
+                fontStyle: 'italic',
+                fontWeight: 400,
+                color: 'var(--accent)',
+              }}>
+                Get answers.
+              </span>
+            </h1>
+            <p style={{
+              fontFamily: 'var(--font-body)',
+              fontWeight: 400,
+              fontSize: 'clamp(0.9rem, 2vw, 1.05rem)',
+              color: 'var(--text-muted)',
+              lineHeight: 1.7,
+              maxWidth: '480px',
+            }}>
+              Questions about subjects, projects, internships, or placements —
+              ask here and get answers from students who've been through it.
+            </p>
+          </div>
+
+          <button
+            onClick={() => setShowForm(s => !s)}
+            className="btn-primary"
+            style={{ flexShrink: 0 }}
+          >
+            {showForm ? <X size={15} /> : <Plus size={15} />}
+            {showForm ? 'Cancel' : 'Ask a Question'}
+          </button>
+        </div>
+      </section>
+
+      {/* ── ASK FORM ───────────────────────────── */}
+      {showForm && (
+        <section style={{
+          padding: '0 clamp(1.5rem, 6vw, 7rem) clamp(2rem, 4vw, 3rem)',
+        }}>
+          <form
+            onSubmit={handleSubmitQuestion}
+            style={{
+              background: 'var(--surface)',
+              border: '1px solid var(--border)',
+              borderRadius: '1rem',
+              padding: 'clamp(1.5rem, 3vw, 2rem)',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '1.25rem',
+              maxWidth: '700px',
+            }}
+          >
+            <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+              <div style={{ flex: '1 1 200px' }}>
+                <label style={labelStyle}>Your name</label>
+                <input
+                  type="text"
+                  value={form.name}
+                  onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+                  placeholder="e.g. Priya S."
+                  required
+                  style={inputStyle}
+                />
+              </div>
+              <div style={{ flex: '0 0 110px' }}>
+                <label style={labelStyle}>Branch</label>
+                <select
+                  value={form.branch}
+                  onChange={e => setForm(f => ({ ...f, branch: e.target.value }))}
+                  style={inputStyle}
+                >
+                  {BRANCHES.map(b => <option key={b} value={b}>{b}</option>)}
+                </select>
+              </div>
+              <div style={{ flex: '0 0 100px' }}>
+                <label style={labelStyle}>Semester</label>
+                <select
+                  value={form.semester}
+                  onChange={e => setForm(f => ({ ...f, semester: Number(e.target.value) }))}
+                  style={inputStyle}
+                >
+                  {SEMESTERS.map(s => <option key={s} value={s}>Sem {s}</option>)}
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label style={labelStyle}>Your question</label>
+              <textarea
+                value={form.question_text}
+                onChange={e => setForm(f => ({ ...f, question_text: e.target.value }))}
+                placeholder="Ask anything — about subjects, projects, internships, placements..."
+                required
+                rows={4}
+                style={{ ...inputStyle, resize: 'vertical', fontFamily: 'var(--font-body)' }}
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={submitting}
+              className="btn-primary"
+              style={{ alignSelf: 'flex-start', opacity: submitting ? 0.6 : 1 }}
+            >
+              {submitting ? <Loader2 size={15} className="animate-spin" /> : <Send size={15} />}
+              {submitting ? 'Posting...' : 'Post Question'}
+            </button>
+          </form>
+        </section>
+      )}
+
+      {/* ── QUESTIONS LIST ─────────────────────── */}
+      <section style={{
+        padding: '0 clamp(1.5rem, 6vw, 7rem) clamp(4rem, 8vw, 6rem)',
+      }}>
+
+        {loading && (
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.75rem',
+            color: 'var(--text-muted)',
+            fontFamily: 'var(--font-body)',
+            fontSize: '0.9rem',
+            padding: '2rem 0',
+          }}>
+            <Loader2 size={16} className="animate-spin" />
+            Loading questions...
+          </div>
+        )}
+
+        {error && !loading && (
+          <div style={{
+            background: 'var(--surface)',
+            border: '1px solid var(--border)',
+            borderRadius: '0.75rem',
+            padding: '1.5rem',
+            color: 'var(--text-muted)',
+            fontFamily: 'var(--font-body)',
+            fontSize: '0.9rem',
+          }}>
+            Couldn't load questions right now. Please try again later.
+          </div>
+        )}
+
+        {!loading && !error && questions.length === 0 && (
+          <div style={{
+            background: 'var(--surface)',
+            border: '1px solid var(--border)',
+            borderRadius: '1rem',
+            padding: 'clamp(2.5rem, 6vw, 4rem)',
+            textAlign: 'center',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '1rem',
+          }}>
+            <Users size={28} color="var(--accent)" strokeWidth={1.5} />
+            <h3 style={{
+              fontFamily: 'var(--font-ui)',
+              fontWeight: 800,
+              fontSize: '1.1rem',
+              color: 'var(--text)',
+            }}>
+              No questions yet
+            </h3>
+            <p style={{
+              fontFamily: 'var(--font-body)',
+              fontSize: '0.9rem',
+              color: 'var(--text-muted)',
+              maxWidth: '360px',
+              lineHeight: 1.7,
+            }}>
+              Be the first to ask something — your question might help someone else too.
+            </p>
+          </div>
+        )}
+
+        {!loading && !error && questions.length > 0 && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            {questions.map(q => (
               <div
-                key={idx}
+                key={q.id}
                 style={{
                   background: 'var(--surface)',
                   border: '1px solid var(--border)',
                   borderRadius: '1rem',
-                  padding: '2rem',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '1rem',
+                  overflow: 'hidden',
                 }}
               >
-                <Icon size={24} color="var(--accent)" strokeWidth={1.5} />
-                <div>
-                  <h3 style={{
-                    fontFamily: 'var(--font-ui)',
-                    fontWeight: 800,
-                    fontSize: '1.05rem',
-                    color: 'var(--text)',
-                    marginBottom: '0.5rem',
-                    letterSpacing: '-0.01em',
-                  }}>
-                    {item.title}
-                  </h3>
-                  <p style={{
-                    fontFamily: 'var(--font-body)',
-                    fontSize: '0.9rem',
-                    color: 'var(--text-muted)',
-                    lineHeight: 1.7,
-                  }}>
-                    {item.desc}
-                  </p>
-                </div>
-              </div>
-            )
-          })}
-        </div>
-      </section>
-
-      {/* ── FEATURES ───────────────────────────── */}
-      <section style={{
-        padding: 'clamp(4rem, 8vw, 7rem) clamp(1.5rem, 6vw, 7rem)',
-        borderTop: '1px solid var(--border)',
-      }}>
-
-        {/* Section header */}
-        <div style={{
-          display: 'flex',
-          alignItems: 'flex-end',
-          justifyContent: 'space-between',
-          marginBottom: '3.5rem',
-          flexWrap: 'wrap',
-          gap: '1rem',
-        }}>
-          <div>
-            <div className="section-label" style={{ marginBottom: '0.75rem' }}>
-              What's inside
-            </div>
-            <h2 style={{
-              fontFamily: 'var(--font-display)',
-              fontWeight: 700,
-              fontSize: 'clamp(1.8rem, 4vw, 3rem)',
-              letterSpacing: '-0.03em',
-              color: 'var(--text)',
-              lineHeight: 1.05,
-              maxWidth: '600px',
-            }}>
-              13+ tools to ace your diploma
-            </h2>
-          </div>
-          <p style={{
-            fontFamily: 'var(--font-body)',
-            fontSize: '0.875rem',
-            color: 'var(--text-muted)',
-            maxWidth: '280px',
-            lineHeight: 1.7,
-            textAlign: 'right',
-          }}>
-            Everything curated for MSBTE K-scheme across all 6 branches. No fluff.
-          </p>
-        </div>
-
-        {/* Features grid — 4 cols desktop, 3 tablet, 2 mobile; 12 items = clean 3 rows */}
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(4, 1fr)',
-          gap: '1px',
-          border: '1px solid var(--border)',
-          borderRadius: '1rem',
-          overflow: 'hidden',
-          background: 'var(--border)',
-        }}
-          className="features-grid"
-        >
-          {features.map(({ icon: Icon, label, desc, path }) => (
-            <Link
-              key={path}
-              to={path}
-              style={{
-                background: 'var(--bg)',
-                padding: '1.75rem 1.5rem',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '0.75rem',
-                transition: 'background 0.2s ease',
-                position: 'relative',
-                overflow: 'hidden',
-                textDecoration: 'none',
-              }}
-              onMouseEnter={e => {
-                e.currentTarget.style.background = 'var(--surface)'
-                const arrow = e.currentTarget.querySelector('.feature-arrow')
-                const bar = e.currentTarget.querySelector('.feature-accent-bar')
-                if (arrow) { arrow.style.opacity = '1'; arrow.style.transform = 'translateX(0)' }
-                if (bar) bar.style.transform = 'scaleY(1)'
-              }}
-              onMouseLeave={e => {
-                e.currentTarget.style.background = 'var(--bg)'
-                const arrow = e.currentTarget.querySelector('.feature-arrow')
-                const bar = e.currentTarget.querySelector('.feature-accent-bar')
-                if (arrow) { arrow.style.opacity = '0'; arrow.style.transform = 'translateX(-6px)' }
-                if (bar) bar.style.transform = 'scaleY(0)'
-              }}
-            >
-              {/* Red left accent bar on hover */}
-              <div
-                className="feature-accent-bar"
-                style={{
-                  position: 'absolute',
-                  left: 0, top: 0, bottom: 0,
-                  width: '2px',
-                  background: 'var(--accent)',
-                  transform: 'scaleY(0)',
-                  transition: 'transform 0.2s ease',
-                }}
-              />
-
-              <Icon size={22} color="var(--text-muted)" strokeWidth={1.5} />
-
-              <div>
-                <div style={{
-                  fontFamily: 'var(--font-ui)',
-                  fontWeight: 800,
-                  fontSize: '1rem',
-                  color: 'var(--text)',
-                  marginBottom: '0.3rem',
-                  letterSpacing: '-0.01em',
-                }}>
-                  {label}
-                </div>
-                <div style={{
-                  fontFamily: 'var(--font-body)',
-                  fontSize: '0.875rem',
-                  color: 'var(--text-muted)',
-                  lineHeight: 1.5,
-                }}>
-                  {desc}
-                </div>
-              </div>
-
-              <div
-                className="feature-arrow"
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '4px',
-                  fontFamily: 'var(--font-mono)',
-                  fontSize: '0.7rem',
-                  letterSpacing: '0.08em',
-                  color: 'var(--accent)',
-                  textTransform: 'uppercase',
-                  opacity: 0,
-                  transform: 'translateX(-6px)',
-                  transition: 'opacity 0.2s ease, transform 0.2s ease',
-                  marginTop: 'auto',
-                }}
-              >
-                Open <ArrowRight size={10} />
-              </div>
-            </Link>
-          ))}
-        </div>
-      </section>
-
-      {/* ── JOURNEY SECTION ────────────────────── */}
-      <section style={{
-        padding: 'clamp(4rem, 8vw, 7rem) clamp(1.5rem, 6vw, 7rem)',
-        borderTop: '1px solid var(--border)',
-      }}>
-
-        <div style={{
-          display: 'flex',
-          alignItems: 'flex-end',
-          justifyContent: 'space-between',
-          marginBottom: '3.5rem',
-          flexWrap: 'wrap',
-          gap: '1rem',
-        }}>
-          <div>
-            <div className="section-label" style={{ marginBottom: '0.75rem' }}>
-              Your journey
-            </div>
-            <h2 style={{
-              fontFamily: 'var(--font-display)',
-              fontWeight: 700,
-              fontSize: 'clamp(1.8rem, 4vw, 3rem)',
-              letterSpacing: '-0.03em',
-              color: 'var(--text)',
-              lineHeight: 1.05,
-              maxWidth: '600px',
-            }}>
-              From semester 1 to your first job
-            </h2>
-          </div>
-        </div>
-
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-          gap: '1.5rem',
-        }}>
-          {[
-            {
-              phase: 'Semester 1–4',
-              title: 'Master the Fundamentals',
-              items: [
-                'Access PYQs and model answers',
-                'Watch curated YouTube playlists',
-                'Build foundational projects',
-                'Learn DSA & competitive programming',
-              ],
-              cta: 'Resources',
-              path: '/resources'
-            },
-            {
-              phase: 'Semester 5–6',
-              title: 'Prepare for the Real World',
-              items: [
-                'Predict your college placement',
-                'Apply for internships',
-                'Prepare for technical interviews',
-                'Build your portfolio',
-              ],
-              cta: 'Internships',
-              path: '/internships'
-            },
-            {
-              phase: 'Post-Diploma',
-              title: 'Land Your Dream Job',
-              items: [
-                'Master placement interview rounds',
-                'Negotiate salary & offers',
-                'Explore further studies (B.E./B.Tech)',
-                'Contribute to open source',
-              ],
-              cta: 'Placement Guide',
-              path: '/placement'
-            },
-          ].map((journey, idx) => (
-            <div
-              key={idx}
-              style={{
-                background: 'var(--surface)',
-                border: '1px solid var(--border)',
-                borderRadius: '1rem',
-                padding: '2rem',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '1.5rem',
-              }}
-            >
-              <div>
-                <div style={{
-                  fontFamily: 'var(--font-mono)',
-                  fontSize: '0.65rem',
-                  letterSpacing: '0.1em',
-                  textTransform: 'uppercase',
-                  color: 'var(--accent)',
-                  marginBottom: '0.75rem',
-                }}>
-                  {journey.phase}
-                </div>
-                <h3 style={{
-                  fontFamily: 'var(--font-ui)',
-                  fontWeight: 800,
-                  fontSize: '1.15rem',
-                  color: 'var(--text)',
-                  letterSpacing: '-0.01em',
-                }}>
-                  {journey.title}
-                </h3>
-              </div>
-
-              <ul style={{
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '0.75rem',
-              }}>
-                {journey.items.map((item, i) => (
-                  <li key={i} style={{
+                <button
+                  onClick={() => toggleExpand(q.id)}
+                  style={{
+                    width: '100%',
+                    textAlign: 'left',
+                    background: 'transparent',
+                    border: 'none',
+                    cursor: 'pointer',
+                    padding: 'clamp(1.25rem, 3vw, 1.75rem)',
                     display: 'flex',
-                    alignItems: 'flex-start',
+                    flexDirection: 'column',
                     gap: '0.75rem',
-                    fontFamily: 'var(--font-body)',
-                    fontSize: '0.9rem',
-                    color: 'var(--text-muted)',
-                    lineHeight: 1.6,
+                  }}
+                >
+                  <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
+                    <span style={tagStyle}>{q.branch}</span>
+                    <span style={tagStyle}>Sem {q.semester}</span>
+                    <span style={{
+                      fontFamily: 'var(--font-mono)',
+                      fontSize: '0.7rem',
+                      color: 'var(--text-muted)',
+                      marginLeft: 'auto',
+                    }}>
+                      {timeAgo(q.created_at)}
+                    </span>
+                  </div>
+
+                  <p style={{
+                    fontFamily: 'var(--font-ui)',
+                    fontWeight: 700,
+                    fontSize: '1rem',
+                    color: 'var(--text)',
+                    lineHeight: 1.5,
                   }}>
-                    <CheckCircle size={16} color="var(--accent-lime)" strokeWidth={2} style={{ flexShrink: 0, marginTop: '2px' }} />
-                    {item}
-                  </li>
-                ))}
-              </ul>
+                    {q.question_text}
+                  </p>
 
-              <Link
-                to={journey.path}
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '0.5rem',
-                  color: 'var(--accent)',
-                  fontFamily: 'var(--font-ui)',
-                  fontWeight: 800,
-                  fontSize: '0.9rem',
-                  letterSpacing: '-0.01em',
-                  textDecoration: 'none',
-                  marginTop: 'auto',
-                  transition: 'gap 0.2s ease',
-                }}
-                onMouseEnter={e => e.currentTarget.style.gap = '0.75rem'}
-                onMouseLeave={e => e.currentTarget.style.gap = '0.5rem'}
-              >
-                {journey.cta} <ArrowRight size={14} />
-              </Link>
-            </div>
-          ))}
-        </div>
-      </section>
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    gap: '0.5rem',
+                  }}>
+                    <span style={{
+                      fontFamily: 'var(--font-body)',
+                      fontSize: '0.8rem',
+                      color: 'var(--text-muted)',
+                    }}>
+                      Asked by {q.name}
+                    </span>
 
-      {/* ── BOTTOM CTA ─────────────────────────── */}
-      <section style={{
-        padding: 'clamp(4rem, 8vw, 7rem) clamp(1.5rem, 6vw, 7rem)',
-        borderTop: '1px solid var(--border)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        flexWrap: 'wrap',
-        gap: '3rem',
-      }}>
+                    <span style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '0.4rem',
+                      fontFamily: 'var(--font-mono)',
+                      fontSize: '0.7rem',
+                      letterSpacing: '0.06em',
+                      textTransform: 'uppercase',
+                      color: 'var(--accent)',
+                    }}>
+                      <MessageCircle size={13} />
+                      {expanded === q.id ? 'Hide answers' : 'View answers'}
+                      {expanded === q.id ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
+                    </span>
+                  </div>
+                </button>
 
-        <div style={{ maxWidth: '540px' }}>
-          <div className="section-label" style={{ marginBottom: '0.75rem' }}>
-            Open Source
-          </div>
-          <h2 style={{
-            fontFamily: 'var(--font-display)',
-            fontWeight: 700,
-            fontSize: 'clamp(1.8rem, 4vw, 3rem)',
-            letterSpacing: '-0.03em',
-            color: 'var(--text)',
-            lineHeight: 1.05,
-            marginBottom: '1.25rem',
-          }}>
-            If it helped you,<br />
-            <span style={{
-              fontFamily: 'var(--font-serif)',
-              fontStyle: 'italic',
-              fontWeight: 400,
-              color: 'var(--accent)',
-            }}>
-              pay it forward.
-            </span>
-          </h2>
-          <p style={{
-            fontFamily: 'var(--font-body)',
-            fontSize: '0.9rem',
-            color: 'var(--text-muted)',
-            lineHeight: 1.7,
-            marginBottom: '2rem',
-            maxWidth: '400px',
-          }}>
-            Diploma Dost is built by students, for students. Share it with your classmates, contribute code, or help improve content on GitHub.
-          </p>
-          <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-            <a
-              href="https://github.com/piush365/Diploma-Dost"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn-primary"
-            >
-              <GitBranchIcon size={14} /> View on GitHub
-            </a>
-            <Link to="/opensource" className="btn-ghost">
-              How to contribute
-            </Link>
-          </div>
-        </div>
+                {expanded === q.id && (
+                  <div style={{
+                    borderTop: '1px solid var(--border)',
+                    padding: 'clamp(1.25rem, 3vw, 1.75rem)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '1rem',
+                  }}>
+                    {answersLoading[q.id] && (
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.5rem',
+                        color: 'var(--text-muted)',
+                        fontFamily: 'var(--font-body)',
+                        fontSize: '0.85rem',
+                      }}>
+                        <Loader2 size={14} className="animate-spin" />
+                        Loading answers...
+                      </div>
+                    )}
 
-        {/* Right side — subtle stat block */}
-        <div style={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '2rem',
-          borderLeft: '1px solid var(--border)',
-          paddingLeft: '3rem',
-        }}>
-          {[
-            { value: 'EST. 2024', label: 'Founded' },
-            { value: '6',        label: 'Branches' },
-            { value: '1000+',    label: 'Students helped' },
-          ].map(s => (
-            <div key={s.label}>
-              <div style={{
-                fontFamily: 'var(--font-display)',
-                fontWeight: 700,
-                fontSize: '1.5rem',
-                color: 'var(--text)',
-                letterSpacing: '-0.02em',
-                lineHeight: 1,
-              }}>
-                {s.value}
+                    {!answersLoading[q.id] && (answers[q.id] || []).length === 0 && (
+                      <p style={{
+                        fontFamily: 'var(--font-body)',
+                        fontSize: '0.85rem',
+                        color: 'var(--text-muted)',
+                        fontStyle: 'italic',
+                      }}>
+                        No answers yet. Be the first to help out.
+                      </p>
+                    )}
+
+                    {(answers[q.id] || []).map(a => (
+                      <div
+                        key={a.id}
+                        style={{
+                          background: 'var(--bg)',
+                          border: '1px solid var(--border)',
+                          borderRadius: '0.75rem',
+                          padding: '1rem 1.25rem',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '0.4rem',
+                        }}
+                      >
+                        <p style={{
+                          fontFamily: 'var(--font-body)',
+                          fontSize: '0.9rem',
+                          color: 'var(--text)',
+                          lineHeight: 1.6,
+                        }}>
+                          {a.answer_text}
+                        </p>
+                        <div style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          gap: '0.5rem',
+                          flexWrap: 'wrap',
+                        }}>
+                          <span style={{
+                            fontFamily: 'var(--font-mono)',
+                            fontSize: '0.7rem',
+                            color: 'var(--accent)',
+                          }}>
+                            {a.name}
+                          </span>
+                          <span style={{
+                            fontFamily: 'var(--font-mono)',
+                            fontSize: '0.7rem',
+                            color: 'var(--text-muted)',
+                          }}>
+                            {timeAgo(a.created_at)}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+
+                    <form
+                      onSubmit={e => handleSubmitAnswer(e, q.id)}
+                      style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '0.75rem',
+                        marginTop: '0.5rem',
+                      }}
+                    >
+                      <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+                        <input
+                          type="text"
+                          value={answerForm.name}
+                          onChange={e => setAnswerForm(f => ({ ...f, name: e.target.value }))}
+                          placeholder="Your name"
+                          required
+                          style={{ ...inputStyle, flex: '0 0 160px' }}
+                        />
+                        <input
+                          type="text"
+                          value={answerForm.answer_text}
+                          onChange={e => setAnswerForm(f => ({ ...f, answer_text: e.target.value }))}
+                          placeholder="Write an answer..."
+                          required
+                          style={{ ...inputStyle, flex: '1 1 200px' }}
+                        />
+                      </div>
+                      <button
+                        type="submit"
+                        disabled={answerSubmitting}
+                        className="btn-ghost"
+                        style={{ alignSelf: 'flex-start', opacity: answerSubmitting ? 0.6 : 1 }}
+                      >
+                        {answerSubmitting ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
+                        {answerSubmitting ? 'Posting...' : 'Post Answer'}
+                      </button>
+                    </form>
+                  </div>
+                )}
               </div>
-              <div style={{
-                fontFamily: 'var(--font-mono)',
-                fontSize: '0.58rem',
-                letterSpacing: '0.12em',
-                textTransform: 'uppercase',
-                color: 'var(--text-muted)',
-                marginTop: '4px',
-              }}>
-                {s.label}
-              </div>
-            </div>
-          ))}
-        </div>
-
+            ))}
+          </div>
+        )}
       </section>
-
     </div>
   )
+}
+
+const labelStyle = {
+  display: 'block',
+  fontFamily: 'var(--font-mono)',
+  fontSize: '0.65rem',
+  letterSpacing: '0.1em',
+  textTransform: 'uppercase',
+  color: 'var(--text-muted)',
+  marginBottom: '0.4rem',
+}
+
+const inputStyle = {
+  width: '100%',
+  background: 'var(--bg)',
+  border: '1px solid var(--border)',
+  borderRadius: '0.5rem',
+  padding: '0.6rem 0.75rem',
+  fontFamily: 'var(--font-body)',
+  fontSize: '0.9rem',
+  color: 'var(--text)',
+  outline: 'none',
+}
+
+const tagStyle = {
+  fontFamily: 'var(--font-mono)',
+  fontSize: '0.65rem',
+  letterSpacing: '0.08em',
+  textTransform: 'uppercase',
+  color: 'var(--accent)',
+  background: 'rgba(232, 69, 60, 0.1)',
+  padding: '0.2rem 0.55rem',
+  borderRadius: '0.3rem',
 }
