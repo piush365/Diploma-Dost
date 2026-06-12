@@ -2,30 +2,50 @@ import { useState, useCallback, useEffect, useRef } from "react";
 import { supabase } from '../lib/supabase';
 import {
   Search, AlertTriangle, ChevronDown, X,
-  BookmarkPlus, BookmarkCheck, Info, MapPin, Building2
+  BookmarkPlus, BookmarkCheck, Info, MapPin, Building2,
+  Download, Share2, Trash2, Copy, Check
 } from "lucide-react";
 
 // ─── constants ──────────────────────────────────────────────────────────────
 
 const BRANCH_PATTERNS = {
-  CS:    ["computer engineering", "computer science"],
-  IT:    ["information technology"],
-  Mech:  ["mechanical"],
-  Civil: ["civil"],
-  Elec:  ["electrical"],
-  ETC:   ["electronics"],
-  AIDS:  ["artificial intelligence and data science"],
-  AIML:  ["artificial intelligence and machine learning"],
-  Robo:  ["robotics"],
-  DS:    ["data science"],
+  CS: ["computer engineering", "computer science", "computer technology", "software engineering", "computer science and engineering", "computer science and technology", "computer science and design", "computer science and business systems"],
+  IT: ["information technology"],
+  AIDS: ["artificial intelligence and data science", "artificial intelligence (ai) and data science"],
+  AIML: ["artificial intelligence and machine learning"],
+  Cyber: ["cyber security"],
+  IoT: ["internet of things", "iot"],
+  Mech: ["mechanical engineering", "mechanical & automation", "mechanical and mechatronics", "mechatronics engineering"],
+  Civil: ["civil engineering", "civil and environmental", "civil and infrastructure", "civil engineering and planning", "structural engineering"],
+  Elec: ["electrical engineering", "electrical engg", "electrical and power", "electrical, electronics and power"],
+  ETC: ["electronics and telecommunication", "electronics and communication", "electronics engineering", "electronics and computer engineering", "electronics and computer science", "vlsi"],
+  Auto: ["automobile engineering", "automotive technology"],
+  Bio: ["bio medical engineering", "bio technology", "biomedical engineering"],
+  Chem: ["chemical engineering", "petro chemical", "plastic and polymer", "plastic engineering", "polymer engineering", "oil technology", "oil and paints"],
+  Textile: ["textile", "fashion technology", "silk technology"],
+  Production: ["production engineering", "manufacturing science", "industrial engineering"],
+  Instru: ["instrumentation"],
+  Others: ["aeronautical", "agricultural", "metallurgy", "mining", "5g", "printing", "food technology", "surface coating"]
 };
 
 const BRANCH_LABELS = {
-  CS: "Computer Science", IT: "Information Technology",
-  Mech: "Mechanical",     Civil: "Civil",
-  Elec: "Electrical",     ETC: "Electronics & TC",
-  AIDS: "AI & Data Science", AIML: "AI & Machine Learning",
-  Robo: "Robotics & Automation", DS: "Data Science",
+  CS: "Computer Science/Engg",
+  IT: "Information Technology",
+  AIDS: "AI & Data Science",
+  AIML: "AI & Machine Learning",
+  Cyber: "Cyber Security",
+  IoT: "Internet of Things",
+  Mech: "Mechanical/Mechatronics",
+  Civil: "Civil Engineering",
+  Elec: "Electrical Engineering",
+  ETC: "Electronics & TC",
+  Auto: "Automobile/Automotive",
+  Bio: "Bio Medical/Tech",
+  Chem: "Chemical/Plastic/Oil",
+  Textile: "Textile/Fashion",
+  Production: "Production/Industrial",
+  Instru: "Instrumentation",
+  Others: "Others (Aero/Agri/etc)"
 };
 
 const BRANCHES = Object.keys(BRANCH_PATTERNS);
@@ -65,36 +85,183 @@ const PCT_MARGIN = 1.5;
 
 // ─── tiny helpers ────────────────────────────────────────────────────────────
 
-function Dropdown({ value, onChange, options, placeholder }) {
+function SearchableDropdown({ value, onChange, options, placeholder, typeLabel }) {
   const [open, setOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [error, setError] = useState("");
+  const inputRef = useRef(null);
+
   const selected = options.find((o) => o.value === value);
+  
+  const filteredOptions = options.filter(opt => 
+    opt.label.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    opt.value.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const handleInputChange = (e) => {
+    const val = e.target.value;
+    setSearchTerm(val);
+    setError("");
+
+    if (val === "") return;
+
+    // Check if any option starts with or contains this search term
+    const hasMatch = options.some(opt => 
+      opt.label.toLowerCase().includes(val.toLowerCase()) ||
+      opt.value.toLowerCase().includes(val.toLowerCase())
+    );
+
+    if (!hasMatch) {
+      setError(`Invalid ${typeLabel}`);
+      // Remove the last character that caused the mismatch
+      setTimeout(() => {
+        setSearchTerm(prev => prev.slice(0, -1));
+        setError("");
+      }, 800);
+    }
+  };
+
   return (
     <div className="relative">
-      <button
-        onClick={() => setOpen((v) => !v)}
-        className={`w-full flex items-center justify-between gap-2 px-4 py-3
-                    rounded-lg border bg-[#141414] font-['General_Sans'] text-sm
-                    transition-colors duration-150
-                    ${value ? "border-[#2a2a2a] text-[#f0ede6]" : "border-[#2a2a2a] text-[#888]"}
-                    hover:border-[#888]`}
-      >
-        <span>{selected ? selected.label : placeholder}</span>
+      <div className="relative group">
+        <input
+          ref={inputRef}
+          type="text"
+          placeholder={selected ? selected.label : placeholder}
+          value={open ? searchTerm : (selected ? selected.label : "")}
+          onChange={handleInputChange}
+          onFocus={() => { setOpen(true); setSearchTerm(""); }}
+          className={`w-full px-4 py-3 rounded-lg border bg-[#141414] font-['General_Sans'] text-sm
+                      transition-colors duration-150 outline-none
+                      ${error ? "border-[#e8453c]" : "border-[#2a2a2a]"}
+                      ${value && !open ? "text-[#f0ede6]" : "text-[#888]"}
+                      hover:border-[#888] focus:border-[#e8453c]`}
+        />
         <ChevronDown size={14} strokeWidth={2}
-          className={`text-[#888] transition-transform duration-150 shrink-0 ${open ? "rotate-180" : ""}`} />
-      </button>
+          className={`absolute right-4 top-1/2 -translate-y-1/2 text-[#888] transition-transform duration-150 pointer-events-none ${open ? "rotate-180" : ""}`} />
+        
+        {error && (
+          <p className="absolute -bottom-5 left-0 font-['General_Sans'] text-[0.65rem] text-[#e8453c] animate-pulse">
+            {error}
+          </p>
+        )}
+      </div>
+
       {open && (
         <>
-          <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
+          <div className="fixed inset-0 z-10" onClick={() => { setOpen(false); setSearchTerm(""); }} />
           <div className="absolute top-full left-0 mt-1 z-20 w-full border border-[#2a2a2a]
                           rounded-lg bg-[#141414] shadow-2xl overflow-hidden max-h-56 overflow-y-auto">
-            {options.map((opt) => (
-              <button key={opt.value} onClick={() => { onChange(opt.value); setOpen(false); }}
-                className={`w-full text-left px-4 py-2.5 font-['General_Sans'] text-sm
-                            hover:bg-[#1a1a1a] transition-colors duration-100
-                            ${value === opt.value ? "text-[#e8453c]" : "text-[#f0ede6]"}`}>
-                {opt.label}
-              </button>
-            ))}
+            {filteredOptions.length > 0 ? (
+              filteredOptions.map((opt) => (
+                <button key={opt.value} 
+                  onClick={() => { 
+                    onChange(opt.value); 
+                    setOpen(false); 
+                    setSearchTerm(""); 
+                  }}
+                  className={`w-full text-left px-4 py-2.5 font-['General_Sans'] text-sm
+                              hover:bg-[#1a1a1a] transition-colors duration-100
+                              ${value === opt.value ? "text-[#e8453c]" : "text-[#f0ede6]"}`}>
+                  {opt.label}
+                </button>
+              ))
+            ) : (
+              <div className="px-4 py-3 text-center font-['General_Sans'] text-[0.75rem] text-[#888]">
+                No matches found
+              </div>
+            )}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+// Multi-select searchable dropdown for districts
+function MultiSelectSearchableDropdown({ values, onChange, options, placeholder }) {
+  const [open, setOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [error, setError] = useState("");
+  
+  const filteredOptions = options.filter(opt => 
+    opt.label.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const handleInputChange = (e) => {
+    const val = e.target.value;
+    setSearchTerm(val);
+    setError("");
+
+    if (val === "") return;
+
+    const hasMatch = options.some(opt => 
+      opt.label.toLowerCase().includes(val.toLowerCase())
+    );
+
+    if (!hasMatch) {
+      setError("Invalid district");
+      setTimeout(() => {
+        setSearchTerm(prev => prev.slice(0, -1));
+        setError("");
+      }, 800);
+    }
+  };
+
+  return (
+    <div className="relative">
+      <div className="relative group">
+        <input
+          type="text"
+          placeholder={values.length > 0 ? `${values.length} districts selected` : placeholder}
+          value={open ? searchTerm : ""}
+          onChange={handleInputChange}
+          onFocus={() => { setOpen(true); setSearchTerm(""); }}
+          className={`w-full px-4 py-3 rounded-lg border bg-[#141414] font-['General_Sans'] text-sm
+                      transition-colors duration-150 outline-none
+                      ${error ? "border-[#e8453c]" : "border-[#2a2a2a]"}
+                      ${values.length > 0 && !open ? "text-[#f0ede6]" : "text-[#888]"}
+                      hover:border-[#888] focus:border-[#e8453c]`}
+        />
+        <ChevronDown size={14} strokeWidth={2}
+          className={`absolute right-4 top-1/2 -translate-y-1/2 text-[#888] transition-transform duration-150 pointer-events-none ${open ? "rotate-180" : ""}`} />
+        
+        {error && (
+          <p className="absolute -bottom-5 left-0 font-['General_Sans'] text-[0.65rem] text-[#e8453c] animate-pulse">
+            {error}
+          </p>
+        )}
+      </div>
+
+      {open && (
+        <>
+          <div className="fixed inset-0 z-10" onClick={() => { setOpen(false); setSearchTerm(""); }} />
+          <div className="absolute top-full left-0 mt-1 z-20 w-full border border-[#2a2a2a]
+                          rounded-lg bg-[#141414] shadow-2xl overflow-hidden max-h-56 overflow-y-auto">
+            {filteredOptions.length > 0 ? (
+              filteredOptions.map((opt) => (
+                <button key={opt.value}
+                  onClick={() => {
+                    onChange(values.includes(opt.value)
+                      ? values.filter(v => v !== opt.value)
+                      : [...values, opt.value]
+                    );
+                  }}
+                  className={`w-full text-left px-4 py-2.5 font-['General_Sans'] text-sm
+                              hover:bg-[#1a1a1a] transition-colors duration-100
+                              ${values.includes(opt.value) ? "text-[#e8453c] bg-[#e8453c]/5" : "text-[#f0ede6]"}`}>
+                  <span className="flex items-center gap-2">
+                    <input type="checkbox" checked={values.includes(opt.value)} readOnly
+                      className="w-4 h-4 rounded border-[#2a2a2a] bg-[#0d0e0f]" />
+                    {opt.label}
+                  </span>
+                </button>
+              ))
+            ) : (
+              <div className="px-4 py-3 text-center font-['General_Sans'] text-[0.75rem] text-[#888]">
+                No matches found
+              </div>
+            )}
           </div>
         </>
       )}
@@ -370,51 +537,123 @@ function CollegeAllBranches({ college, category, onClose }) {
   );
 }
 
-// ─── shortlist panel ──────────────────────────────────────────────────────────
+// ─── enhanced shortlist drawer panel ──────────────────────────────────────────
 
-function ShortlistPanel({ shortlist, onRemove, onClear }) {
+function ShortlistDrawer({ shortlist, onRemove, onClear, onClose }) {
+  const [copied, setCopied] = useState(false);
+
+  const exportAsText = () => {
+    const text = shortlist
+      .map((c, i) => `${i + 1}. ${c.college_name} (${c.college_code}) - ${c.course_name} - ${c.cutoff_percent.toFixed(2)}% - ${c.district}`)
+      .join('\n');
+    navigator.clipboard.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   if (shortlist.length === 0) return null;
+
   return (
-    <div className="fixed bottom-6 right-6 z-30 w-80 border border-[#e8453c]/30
-                    rounded-xl bg-[#0d0e0f] shadow-2xl overflow-hidden">
-      <div className="flex items-center justify-between px-4 py-3 border-b border-[#2a2a2a]">
-        <div className="flex items-center gap-2">
-          <BookmarkCheck size={14} strokeWidth={2} className="text-[#e8453c]" />
-          <span className="font-['Cabinet_Grotesk'] font-semibold text-[#f0ede6] text-sm">My Shortlist</span>
-          <span className="font-['JetBrains_Mono'] text-[0.65rem] text-[#e8453c] bg-[#e8453c]/10 px-1.5 py-0.5 rounded">
-            {shortlist.length}
-          </span>
+    <>
+      <div className="fixed inset-0 bg-black/60 z-40 backdrop-blur-sm" onClick={onClose} />
+      <div className="fixed right-0 top-0 h-full w-full max-w-[600px] bg-[#141414] border-l border-[#2a2a2a] z-50 overflow-y-auto">
+        {/* sticky header */}
+        <div className="sticky top-0 bg-[#141414] border-b border-[#2a2a2a] px-6 py-5 flex items-start justify-between gap-4">
+          <div className="min-w-0">
+            <p className="font-['JetBrains_Mono'] text-[0.65rem] text-[#e8453c] tracking-widest uppercase mb-2 font-bold">
+              My Shortlist
+            </p>
+            <h2 className="font-['Clash_Display'] text-[1.5rem] font-semibold text-[#f0ede6] leading-tight">
+              {shortlist.length} College{shortlist.length !== 1 ? 's' : ''}
+            </h2>
+          </div>
+          <button onClick={onClose} className="mt-1 text-[#888] hover:text-[#f0ede6] transition-colors flex-shrink-0">
+            <X size={20} strokeWidth={2} />
+          </button>
         </div>
-        <button onClick={onClear}
-          className="font-['General_Sans'] text-[0.72rem] text-[#888] hover:text-[#e8453c] transition-colors duration-150">
-          Clear all
-        </button>
-      </div>
-      <div className="max-h-64 overflow-y-auto">
-        {shortlist.map((c, i) => (
-          <div key={c.college_code + c.course_name + i}
-            className="flex items-center justify-between gap-3 px-4 py-3 border-b border-[#1a1a1a] last:border-0">
-            <div className="min-w-0">
-              <div className="flex items-center gap-2 mb-0.5">
-                <span className="font-['JetBrains_Mono'] text-[0.6rem] text-[#888]">#{i + 1}</span>
-                <span className="font-['JetBrains_Mono'] text-[0.6rem] text-[#888]">{c.college_code}</span>
-                <span className="font-['JetBrains_Mono'] text-[0.6rem] text-[#e8453c]">{c.cutoff_percent.toFixed(2)}%</span>
-              </div>
-              <p className="font-['General_Sans'] text-[0.78rem] text-[#f0ede6] truncate leading-snug">{c.college_name}</p>
-              <p className="font-['General_Sans'] text-[0.68rem] text-[#888] truncate">{c.course_name} · {c.district}</p>
-            </div>
-            <button onClick={() => onRemove(c)} className="shrink-0 text-[#888] hover:text-[#e8453c] transition-colors duration-150">
-              <X size={14} strokeWidth={2} />
+
+        {/* content */}
+        <div className="px-6 py-6 space-y-4">
+          {/* action buttons */}
+          <div className="flex gap-2 flex-wrap">
+            <button onClick={exportAsText}
+              className="flex items-center gap-2 px-3 py-2 rounded-lg border border-[#2a2a2a] bg-[#1a1a1a]
+                         font-['General_Sans'] text-[0.75rem] text-[#888] hover:text-[#f0ede6] hover:border-[#888]
+                         transition-colors duration-150">
+              {copied ? <Check size={13} strokeWidth={2} /> : <Copy size={13} strokeWidth={2} />}
+              {copied ? 'Copied!' : 'Copy List'}
+            </button>
+            <button onClick={onClear}
+              className="flex items-center gap-2 px-3 py-2 rounded-lg border border-[#2a2a2a] bg-[#1a1a1a]
+                         font-['General_Sans'] text-[0.75rem] text-[#888] hover:text-[#e8453c] hover:border-[#e8453c]
+                         transition-colors duration-150">
+              <Trash2 size={13} strokeWidth={2} />
+              Clear All
             </button>
           </div>
-        ))}
+
+          {/* info box */}
+          <div className="rounded-lg border border-[#e8453c]/20 bg-[#e8453c]/5 px-4 py-3">
+            <p className="font-['General_Sans'] text-[0.78rem] text-[#888] leading-relaxed">
+              Use this order when filling your DTE option form. Colleges are ranked by cutoff percentage (highest to lowest).
+            </p>
+          </div>
+
+          {/* shortlist items */}
+          <div className="space-y-3">
+            {shortlist.map((c, i) => (
+              <div key={c.college_code + c.course_name + i}
+                className="rounded-lg border border-[#2a2a2a] bg-[#1a1a1a] p-4 hover:border-[#e8453c]/30 transition-colors duration-150">
+                <div className="flex items-start justify-between gap-3 mb-2">
+                  <div className="flex items-center gap-2">
+                    <span className="font-['JetBrains_Mono'] text-[0.85rem] font-bold text-[#e8453c] bg-[#e8453c]/10 px-2.5 py-1 rounded">
+                      #{i + 1}
+                    </span>
+                    <div className="min-w-0">
+                      <p className="font-['Cabinet_Grotesk'] font-semibold text-[#f0ede6] text-[0.9rem] leading-snug">
+                        {c.college_name}
+                      </p>
+                      <p className="font-['JetBrains_Mono'] text-[0.6rem] text-[#888] mt-0.5">
+                        {c.college_code} · {c.district}
+                      </p>
+                    </div>
+                  </div>
+                  <button onClick={() => onRemove(c)} className="shrink-0 text-[#888] hover:text-[#e8453c] transition-colors duration-150 mt-0.5">
+                    <X size={16} strokeWidth={2} />
+                  </button>
+                </div>
+
+                <div className="flex items-center justify-between gap-3 mb-2">
+                  <p className="font-['General_Sans'] text-[0.78rem] text-[#888] leading-snug truncate">
+                    {c.course_name}
+                  </p>
+                  <span className="shrink-0 font-['JetBrains_Mono'] text-[1.1rem] font-bold text-[#e8453c] leading-none">
+                    {c.cutoff_percent.toFixed(2)}%
+                  </span>
+                </div>
+
+                {c.cutoff_open != null && (
+                  <p className="font-['General_Sans'] text-[0.7rem] text-[#888]">
+                    Merit rank: ~{c.cutoff_open.toLocaleString("en-IN")}
+                  </p>
+                )}
+
+                <div className="flex gap-1.5 mt-3 pt-3 border-t border-[#2a2a2a]">
+                  <span className="font-['JetBrains_Mono'] text-[0.6rem] text-[#888]
+                                   bg-[#0d0e0f] border border-[#2a2a2a] px-2 py-0.5 rounded">
+                    {c.category}
+                  </span>
+                  <span className="font-['JetBrains_Mono'] text-[0.6rem] text-[#888]
+                                   bg-[#0d0e0f] border border-[#2a2a2a] px-2 py-0.5 rounded">
+                    CAP {c.cap_round}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
-      <div className="px-4 py-2.5 border-t border-[#2a2a2a]">
-        <p className="font-['General_Sans'] text-[0.68rem] text-[#888] leading-relaxed">
-          Use this order when filling your DTE option form.
-        </p>
-      </div>
-    </div>
+    </>
   );
 }
 
@@ -438,11 +677,12 @@ function FilterPill({ label, onRemove }) {
 export default function Predictor() {
   // — predictor mode inputs
   const [percentage, setPercentage] = useState("");
+  const [meritRank, setMeritRank] = useState("");
   const [branches, setBranches]     = useState([]);
   const [category, setCategory]     = useState("");
 
   // — shared filters
-  const [districtFilter, setDistrictFilter] = useState("");
+  const [districtFilters, setDistrictFilters] = useState([]);
 
   // — college search mode
   const [collegeSearchText, setCollegeSearchText] = useState("");
@@ -457,6 +697,7 @@ export default function Predictor() {
   const [loading, setLoading]     = useState(false);
   const [error, setError]         = useState(null);
   const [shortlist, setShortlist] = useState([]);
+  const [showShortlist, setShowShortlist] = useState(false);
 
   const percentageNum = parseFloat(percentage);
   const isValidPct = percentage !== "" && !isNaN(percentageNum) && percentageNum >= 0 && percentageNum <= 100;
@@ -504,7 +745,11 @@ export default function Predictor() {
       .lte("cutoff_percent", maxCutoff)
       .order("cutoff_percent", { ascending: false });
 
-    if (districtFilter) query = query.eq("district", districtFilter);
+    // Apply multiple district filters (OR logic)
+    if (districtFilters.length > 0) {
+      const districtFilter = districtFilters.map((d) => `district.eq.${d}`).join(",");
+      query = query.or(districtFilter);
+    }
 
     const { data, error: err } = await query;
     if (err) { setError("Could not fetch cutoff data. Please try again."); setLoading(false); return; }
@@ -541,7 +786,12 @@ export default function Predictor() {
   }
 
   const activeFilters = [];
-  if (districtFilter) activeFilters.push({ label: districtFilter, clear: () => setDistrictFilter("") });
+  if (districtFilters.length > 0) {
+    activeFilters.push({
+      label: `${districtFilters.length} district${districtFilters.length !== 1 ? 's' : ''}`,
+      clear: () => setDistrictFilters([])
+    });
+  }
 
   return (
     <section className="max-w-[1100px] mx-auto px-6 py-20 pb-32">
@@ -558,7 +808,7 @@ export default function Predictor() {
         <p className="font-['General_Sans'] text-[#888] text-base max-w-[520px] leading-relaxed">
           Enter your diploma percentage and category to find colleges where you'd
           have cleared the 2025 CAP cutoff — or search a specific college to see
-          all its branch cutoffs.
+          all its branch cutoffs. Filter by multiple districts and check merit ranks.
         </p>
       </div>
 
@@ -619,8 +869,35 @@ export default function Predictor() {
               <label className="font-['JetBrains_Mono'] text-[0.68rem] uppercase tracking-wider text-[#888]">
                 Category
               </label>
-              <Dropdown value={category} onChange={setCategory}
-                placeholder="Select your category" options={CATEGORIES} />
+              <SearchableDropdown 
+                value={category} 
+                onChange={setCategory}
+                placeholder="Select your category" 
+                options={CATEGORIES}
+                typeLabel="category"
+              />
+            </div>
+          </div>
+
+          {/* merit rank (optional) */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="flex flex-col gap-2">
+              <label className="font-['JetBrains_Mono'] text-[0.68rem] uppercase tracking-wider text-[#888]">
+                Merit Rank <span className="opacity-50 normal-case font-['General_Sans'] tracking-normal">— optional</span>
+              </label>
+              <input
+                type="number" min="0" placeholder="e.g. 5000"
+                value={meritRank} onChange={(e) => setMeritRank(e.target.value)}
+                className="px-4 py-3 rounded-lg border border-[#2a2a2a] bg-[#141414]
+                           font-['General_Sans'] text-sm text-[#f0ede6] placeholder:text-[#888]
+                           hover:border-[#888] focus:border-[#e8453c] focus:outline-none
+                           transition-colors duration-150
+                           [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none
+                           [&::-webkit-inner-spin-button]:appearance-none"
+              />
+              <p className="font-['General_Sans'] text-[0.7rem] text-[#888] opacity-60">
+                Filter colleges by merit rank for additional insights
+              </p>
             </div>
           </div>
 
@@ -638,27 +915,26 @@ export default function Predictor() {
             )}
           </div>
 
-          {/* district filter */}
+          {/* multi-district filter */}
           <div className="flex flex-col gap-2">
             <label className="font-['JetBrains_Mono'] text-[0.68rem] uppercase tracking-wider text-[#888]">
-              Filter by District <span className="opacity-50 normal-case font-['General_Sans'] tracking-normal">— optional</span>
+              Filter by Districts <span className="opacity-50 normal-case font-['General_Sans'] tracking-normal">— optional, select multiple</span>
             </label>
-            <div className="flex items-center gap-3">
-              <div className="w-64">
-                <Dropdown
-                  value={districtFilter}
-                  onChange={setDistrictFilter}
-                  placeholder="All districts"
-                  options={[{ value: "", label: "All districts" }, ...DISTRICTS.map((d) => ({ value: d, label: d }))]}
-                />
-              </div>
-              {districtFilter && (
-                <button onClick={() => setDistrictFilter("")}
-                  className="flex items-center gap-1 font-['General_Sans'] text-[0.75rem] text-[#888] hover:text-[#e8453c] transition-colors duration-150">
-                  <X size={12} strokeWidth={2} /> Clear
-                </button>
-              )}
+            <div className="w-full">
+              <MultiSelectSearchableDropdown
+                values={districtFilters}
+                onChange={setDistrictFilters}
+                placeholder="All districts"
+                options={DISTRICTS.map((d) => ({ value: d, label: d }))}
+              />
             </div>
+            {districtFilters.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {districtFilters.map((d) => (
+                  <FilterPill key={d} label={d} onRemove={() => setDistrictFilters(districtFilters.filter(x => x !== d))} />
+                ))}
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -686,8 +962,13 @@ export default function Predictor() {
               <label className="font-['JetBrains_Mono'] text-[0.68rem] uppercase tracking-wider text-[#888]">
                 Your Category
               </label>
-              <Dropdown value={category} onChange={setCategory}
-                placeholder="Select your category" options={CATEGORIES} />
+              <SearchableDropdown 
+                value={category} 
+                onChange={setCategory}
+                placeholder="Select your category" 
+                options={CATEGORIES}
+                typeLabel="category"
+              />
             </div>
           </div>
         </div>
@@ -765,8 +1046,8 @@ export default function Predictor() {
             <p className="font-['Cabinet_Grotesk'] font-semibold text-[#f0ede6] text-base">No colleges found</p>
             <p className="font-['General_Sans'] text-[#888] text-sm max-w-[320px] leading-relaxed">
               No 2025 cutoffs near {percentage}% for your selected branches and category
-              {districtFilter ? ` in ${districtFilter}` : ""}. Try more branches, a different category
-              {districtFilter ? ", or remove the district filter" : ""}.
+              {districtFilters.length > 0 ? ` in ${districtFilters.join(', ')}` : ""}. Try more branches, a different category
+              {districtFilters.length > 0 ? ", or remove the district filters" : ""}.
             </p>
           </div>
         )}
@@ -774,16 +1055,24 @@ export default function Predictor() {
         {/* predictor results grid */}
         {mode === "predictor" && searched && !loading && !error && results.length > 0 && (
           <div>
-            <div className="flex items-center justify-between mb-4">
-              <p className="font-['JetBrains_Mono'] text-[0.7rem] text-[#888] tracking-wider uppercase">
-                {results.length} college{results.length !== 1 ? "s" : ""} found
-                · {percentage}% · {category}
-                {districtFilter ? ` · ${districtFilter}` : ""}
-              </p>
-              {shortlist.length > 0 && (
-                <p className="font-['General_Sans'] text-[0.75rem] text-[#e8453c]">
-                  {shortlist.length} shortlisted
+            <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
+              <div>
+                <p className="font-['JetBrains_Mono'] text-[0.7rem] text-[#888] tracking-wider uppercase">
+                  {results.length} college{results.length !== 1 ? "s" : ""} found
                 </p>
+                <p className="font-['General_Sans'] text-[0.75rem] text-[#888] mt-1">
+                  {percentage}% · {category}
+                  {districtFilters.length > 0 ? ` · ${districtFilters.join(', ')}` : ""}
+                </p>
+              </div>
+              {shortlist.length > 0 && (
+                <button onClick={() => setShowShortlist(true)}
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg border border-[#e8453c]/40 bg-[#e8453c]/5
+                             font-['General_Sans'] text-[0.75rem] text-[#e8453c] hover:bg-[#e8453c]/10
+                             transition-colors duration-150">
+                  <BookmarkCheck size={14} strokeWidth={2} />
+                  {shortlist.length} Shortlisted
+                </button>
               )}
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -796,7 +1085,15 @@ export default function Predictor() {
         )}
       </div>
 
-      <ShortlistPanel shortlist={shortlist} onRemove={toggleShortlist} onClear={() => setShortlist([])} />
+      {/* Enhanced shortlist drawer */}
+      {showShortlist && (
+        <ShortlistDrawer
+          shortlist={shortlist}
+          onRemove={toggleShortlist}
+          onClear={() => setShortlist([])}
+          onClose={() => setShowShortlist(false)}
+        />
+      )}
     </section>
   );
 }
