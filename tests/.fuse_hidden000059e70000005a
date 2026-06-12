@@ -259,7 +259,7 @@ test.describe('Roadmaps page', () => {
 
   test('IT branch loads correctly', async ({ page }) => {
     await branchTab(page, 'IT').click();
-    await expect(page.getByText(/cybersecurity|cloud/i).first()).toBeVisible();
+    await expect(page.getByText(/cybersecurity|cloud/i)).toBeVisible();
   });
 
   test('coming soon branches show placeholder', async ({ page }) => {

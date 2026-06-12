@@ -1,11 +1,30 @@
 node_modules/
 .env
+.env.local
+.env.*.local
 dist/
 .DS_Store
+
+# Logs
+*.log
+npm-debug.log*
+
+# Editor
+.vscode/
+.idea/
 
 # Playwright
 /test-results/
 /playwright-report/
 /blob-report/
 /playwright/.cache/
-/playwright/.auth/
+/report.html
+
+# Stray/duplicate test file at root (real one is in tests/)
+/diploma-dost.spec.js
+
+# Temp fix script
+fix.js
+# Personal scripts
+create-issues.sh
+github-issues.sh
