@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { ROADMAPS } from "../data/roadmaps";
-import { ChevronRight, X, BookOpen, Play, Code, CheckCircle, GitBranch, Flag } from "lucide-react";
+import { ChevronRight, X, BookOpen, Play, Code, CheckCircle, Flag } from "lucide-react";
+import { FaGithub } from 'react-icons/fa';
 
 const BRANCHES = ["CS", "IT", "Mech", "Civil", "Elec", "ETC"];
 
@@ -109,7 +110,7 @@ function NodeDrawer({ node, onClose }) {
           {node.type === "branch" && (
             <div className="rounded-lg border border-[#2a2a2a] border-dashed px-4 py-3 bg-[#1a1a1a]">
               <div className="flex items-center gap-2 mb-1">
-                <GitBranch size={14} className="text-[#888]" strokeWidth={1.5} />
+                <FaGithub size={14} className="text-[#888]" strokeWidth={1.5} />
                 <div className="font-['JetBrains_Mono'] text-[0.65rem] tracking-[0.12em] uppercase text-[#888] font-bold">
                   Fork Point
                 </div>
@@ -162,7 +163,7 @@ function RoadmapNode({ node, onClick, isLast }) {
             <Flag size={14} className="text-[#e8453c] flex-shrink-0" strokeWidth={2} />
           )}
           {isBranch && (
-            <GitBranch size={14} className="text-[#888] flex-shrink-0" strokeWidth={1.5} />
+            <FaGithub size={14} className="text-[#888] flex-shrink-0" strokeWidth={1.5} />
           )}
           <span className="font-['Cabinet_Grotesk'] text-[1rem] font-semibold text-[#f0ede6] group-hover:text-white transition-colors">
             {node.label}

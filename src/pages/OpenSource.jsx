@@ -13,7 +13,6 @@ import {
   ExternalLink,
   CheckCircle,
   Star,
-  GitBranch,
   GitCommit,
   GitPullRequest
 } from 'lucide-react'
@@ -534,7 +533,7 @@ export default function OpenSourcePage() {
               desc: 'Build pages, fix bugs, improve mobile layout'
             },
             {
-              icon: GitBranch,
+              icon: FaGithub,
               title: 'Backend (Supabase)',
               desc: 'Create tables, set up RLS policies, write queries'
             },

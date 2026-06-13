@@ -1,7 +1,7 @@
 import {
   ArrowRight, ExternalLink, Briefcase, TrendingUp, Users, BookOpen,
   CheckCircle, AlertCircle, Lightbulb, Zap, Target, Award,
-  BarChart3, Code, MessageSquare, Clock, DollarSign, GitBranch
+  BarChart3, Code, MessageSquare, Clock, DollarSign
 } from 'lucide-react'
 
 export default function PlacementPage() {

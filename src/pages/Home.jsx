@@ -20,7 +20,7 @@ const features = [
   { icon: Calendar,      label: 'MSBTE Dates',  desc: 'Exam & deadline calendar',      path: '/msbte'        },
   { icon: GraduationCap, label: 'Scholarships', desc: 'EBC, SC/ST, OBC guides',        path: '/scholarships' },
   { icon: Briefcase,     label: 'Placement',    desc: 'Resume & interview prep',       path: '/placement'    },
-  { icon: GitBranchIcon, label: 'Open Source',  desc: 'Contribute to real projects',   path: '/opensource'   },
+  { icon: FaGithub,        label: 'Open Source',  desc: 'Contribute to real projects',   path: '/opensource'   },
 ]
 
 const stats = [

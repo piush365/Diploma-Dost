@@ -1,6 +1,6 @@
 import {
   ArrowRight, ExternalLink, BookOpen, Code, Trophy, Zap, Users, Target, Lightbulb, CheckCircle, Star,
-  TrendingUp, Layers, MessageSquare, GitBranch
+  TrendingUp, Layers, MessageSquare
 } from 'lucide-react'
 
 import { FaGithub } from 'react-icons/fa'
