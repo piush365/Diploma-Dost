@@ -94,7 +94,7 @@ function SubjectCard({ subjectName, courseCode, entries }) {
               </span>
 
               {/* session pills */}
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-nowrap gap-2 overflow-x-auto scrollbar-hide">
                 {items.map((item) => (
                   <SessionPill
                     key={item.id}

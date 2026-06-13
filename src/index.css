@@ -1,5 +1,3 @@
-/* ── JetBrains Mono (Google CDN) — @import must be first ── */
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap');
 
 /* ═══════════════════════════════════════════
    DIPLOMA DOST — index.css
@@ -120,6 +118,7 @@
 
   html {
     scroll-behavior: smooth;
+    overflow-anchor: none;
   }
 
   body {
@@ -252,20 +251,5 @@
     opacity: 1 !important;
   }
 
-  /* ── Features grid — fixed columns so 12 items always fill rows cleanly ── */
-  .features-grid {
-    grid-template-columns: repeat(4, 1fr) !important;   /* 4×3 = 12 ✓ */
-  }
 
-  @media (max-width: 900px) {
-    .features-grid {
-      grid-template-columns: repeat(3, 1fr) !important; /* 3×4 = 12 ✓ */
-    }
-  }
-
-  @media (max-width: 560px) {
-    .features-grid {
-      grid-template-columns: repeat(2, 1fr) !important; /* 2×6 = 12 ✓ */
-    }
-  }
 }

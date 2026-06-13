@@ -4,14 +4,14 @@ import { Menu, X } from 'lucide-react'
 import ddLogo from '../../assets/dd-logo.png'
 
 const navLinks = [
-  { label: 'Resources', path: '/resources' },
-  { label: 'Roadmaps', path: '/roadmaps' },
-  { label: 'Predictor', path: '/predictor' },
-  { label: 'Innovation Hub', path: '/innovation-hub' },
-  { label: 'DSA & CP', path: '/dsa' },
-  { label: 'YouTube', path: '/youtube' },
+  { label: 'Resources',   path: '/resources' },
+  { label: 'Roadmaps',    path: '/roadmaps' },
+  { label: 'Predictor',   path: '/predictor' },
+  { label: 'Innovations', path: '/innovation-hub' },
+  { label: 'DSA & CP',    path: '/dsa' },
+  { label: 'YouTube',     path: '/youtube' },
   { label: 'Internships', path: '/internships' },
-  { label: 'Community', path: '/community' },
+  { label: 'Community',   path: '/community' },
 ]
 
 export default function Navbar() {
@@ -28,7 +28,7 @@ export default function Navbar() {
       }}
       className="sticky top-0 z-50"
     >
-      <div className="max-w-7xl mx-auto px-6 flex items-center justify-between h-20">
+      <div className="max-w-7xl mx-auto px-6 flex items-center justify-between h-16">
 
         {/* ── Logo ── */}
         <Link
@@ -41,17 +41,17 @@ export default function Navbar() {
             src={ddLogo}
             alt="Diploma Dost"
             style={{
-              width: '68px',
-              height: '68px',
-              borderRadius: '10px',
-              objectFit: 'contain',
+              width: '36px',
+              height: '36px',
+              borderRadius: '8px',
+              objectFit: 'cover',
             }}
           />
           <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.1 }}>
             <span style={{
               fontFamily: 'var(--font-display)',
               fontWeight: 700,
-             fontSize: '1.15rem',
+              fontSize: '0.95rem',
               color: 'var(--text)',
               letterSpacing: '-0.02em',
             }}>
@@ -59,7 +59,7 @@ export default function Navbar() {
             </span>
             <span style={{
               fontFamily: 'var(--font-mono)',
-              fontSize: '0.72rem',
+              fontSize: '0.5rem',
               letterSpacing: '0.12em',
               color: 'var(--text-muted)',
               textTransform: 'uppercase',
@@ -75,35 +75,18 @@ export default function Navbar() {
             const isActive = pathname === link.path
             return (
               <Link
-                key={link.path}
-                to={link.path}
-                style={{
-                  fontFamily: 'var(--font-ui)',
-                  fontWeight: isActive ? 800 : 500,
-                  fontSize: '0.98rem',
-                  color: isActive ? 'var(--accent)' : 'var(--text-muted)',
-                  background: isActive ? 'rgba(232, 69, 60, 0.08)' : 'transparent',
-                  padding: '0.55rem 1rem',
-                  borderRadius: '0.5rem',
-                  letterSpacing: '-0.01em',
-                  transition: 'color 0.2s ease, background 0.2s ease',
-                  textDecoration: 'none',
-                }}
-                onMouseEnter={e => {
-                  if (!isActive) {
-                    e.currentTarget.style.color = 'var(--text)'
-                    e.currentTarget.style.background = 'rgba(128, 128, 128, 0.08)'
-                  }
-                }}
-                onMouseLeave={e => {
-                  if (!isActive) {
-                    e.currentTarget.style.color = 'var(--text-muted)'
-                    e.currentTarget.style.background = 'transparent'
-                  }
-                }}
-              >
-                {link.label}
-              </Link>
+          key={link.path}
+          to={link.path}
+          className={`font-ui text-sm px-3 py-2 rounded-lg transition-colors duration-200 outline-none ${isActive ? 'text-[#e8453c] bg-[#e8453c]/10' : 'text-[#888] hover:text-[#f0ede6] hover:bg-[#1a1a1a]'}`}
+          onFocus={e => {
+            e.currentTarget.style.boxShadow = '0 0 0 2px var(--accent)'
+          }}
+          onBlur={e => {
+            e.currentTarget.style.boxShadow = 'none'
+          }}
+        >
+          {link.label}
+        </Link>
             )
           })}
         </div>
@@ -112,8 +95,13 @@ export default function Navbar() {
         <div className="hidden md:flex items-center gap-3">
           <Link
             to="/predictor"
-            className="btn-primary"
-           style={{ fontSize: '0.95rem', padding: '0.7rem 1.4rem' }}
+            className="btn-primary text-sm px-4 py-2 outline-none"
+            onFocus={e => {
+              e.currentTarget.style.boxShadow = '0 0 0 2px var(--accent)'
+            }}
+            onBlur={e => {
+              e.currentTarget.style.boxShadow = 'none'
+            }}
           >
             College Predictor
           </Link>
@@ -122,15 +110,17 @@ export default function Navbar() {
         {/* ── Mobile right: hamburger ── */}
         <div className="md:hidden flex items-center">
           <button
-            className="p-2 rounded-lg"
-            style={{
-              color: 'var(--text-muted)',
-              background: 'transparent',
-              border: 'none',
-              cursor: 'pointer',
-            }}
+            className="p-2 rounded-lg text-[#888] hover:text-[#f0ede6] transition-colors duration-200 outline-none"
             onClick={() => setOpen(!open)}
             aria-label={open ? 'Close menu' : 'Open menu'}
+            onFocus={e => {
+              e.currentTarget.style.boxShadow = '0 0 0 2px var(--accent)'
+              e.currentTarget.style.color = 'var(--text)'
+            }}
+            onBlur={e => {
+              e.currentTarget.style.boxShadow = 'none'
+              e.currentTarget.style.color = 'var(--text-muted)'
+            }}
           >
             {open ? <X size={20} /> : <Menu size={20} />}
           </button>
@@ -150,38 +140,18 @@ export default function Navbar() {
                 key={link.path}
                 to={link.path}
                 onClick={() => setOpen(false)}
-                style={{
-                  fontFamily: 'var(--font-ui)',
-                  fontWeight: isActive ? 800 : 500,
-                  fontSize: '1rem',
-                  color: isActive ? 'var(--accent)' : 'var(--text-muted)',
-                  background: isActive ? 'rgba(232, 69, 60, 0.08)' : 'transparent',
-                  padding: '0.75rem 1rem',
-                  borderRadius: '0.6rem',
-                  textDecoration: 'none',
-                  transition: 'color 0.2s ease',
+                className={`font-ui text-base px-4 py-3 rounded-lg transition-colors duration-200 outline-none ${isActive ? 'text-[#e8453c] bg-[#e8453c]/10' : 'text-[#888] hover:text-[#f0ede6] hover:bg-[#1a1a1a]'}`}
+                onFocus={e => {
+                  e.currentTarget.style.boxShadow = '0 0 0 2px var(--accent)'
+                }}
+                onBlur={e => {
+                  e.currentTarget.style.boxShadow = 'none'
                 }}
               >
                 {link.label}
               </Link>
             )
           })}
-
-          {/* Mobile CTA */}
-          <div style={{
-            marginTop: '0.5rem',
-            paddingTop: '0.75rem',
-            borderTop: '1px solid var(--border)',
-          }}>
-            <Link
-              to="/predictor"
-              className="btn-primary"
-              onClick={() => setOpen(false)}
-              style={{ width: '100%', justifyContent: 'center', fontSize: '0.875rem' }}
-            >
-              College Predictor
-            </Link>
-          </div>
         </div>
       )}
     </nav>

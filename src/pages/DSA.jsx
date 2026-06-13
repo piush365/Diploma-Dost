@@ -11,7 +11,7 @@ export default function DSAPage() {
 
       {/* ── HERO ───────────────────────────────── */}
       <section style={{
-        minHeight: '80vh',
+        minHeight: 'calc(80vh - 64px)',
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'center',
@@ -20,14 +20,7 @@ export default function DSAPage() {
         overflow: 'hidden',
       }}>
 
-        {/* Top accent line */}
-        <div style={{
-          position: 'absolute',
-          top: 0, left: 0, right: 0,
-          height: '1px',
-          background: 'linear-gradient(90deg, transparent, var(--accent), transparent)',
-          opacity: 0.4,
-        }} />
+
 
         {/* Badge */}
         <div style={{
@@ -110,16 +103,16 @@ export default function DSAPage() {
         </p>
 
         {/* CTAs */}
-        <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', marginBottom: '5rem' }}>
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-3 mb-20">
           <a
             href="#strivers-sheet"
-            className="btn-primary"
+            className="btn-primary w-full sm:w-auto text-center justify-center"
           >
             Start with Striver's Sheet <ArrowRight size={15} />
           </a>
           <a
             href="#language-choice"
-            className="btn-ghost"
+            className="btn-ghost w-full sm:w-auto text-center justify-center"
           >
             Choose Your Language
           </a>

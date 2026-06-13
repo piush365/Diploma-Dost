@@ -44,7 +44,7 @@ function NodeDrawer({ node, onClose }) {
   return (
     <>
       <div className="fixed inset-0 bg-black/60 z-40 backdrop-blur-sm" onClick={onClose} />
-      <div className="fixed right-0 top-0 h-full w-full max-w-[500px] bg-[#141414] border-l border-[#2a2a2a] z-50 overflow-y-auto">
+      <div className="fixed right-0 top-0 h-full w-full md:max-w-[500px] bg-[#141414] border-l border-[#2a2a2a] z-50 overflow-y-auto">
         <div className="sticky top-0 bg-[#141414] border-b border-[#2a2a2a] px-6 py-5 flex items-start justify-between gap-4">
           <div className="min-w-0">
             <div className={`font-['JetBrains_Mono'] text-[0.65rem] tracking-widest uppercase mb-2 font-bold ${phase.text}`}>
@@ -227,7 +227,7 @@ export default function Roadmaps() {
         </div>
 
         {/* Branch Tabs */}
-        <div className="flex gap-2 flex-wrap border-b border-[#2a2a2a] mb-10 pb-6">
+        <div className="flex gap-2 flex-nowrap overflow-x-auto scrollbar-hide border-b border-[#2a2a2a] mb-10 pb-6">
           {BRANCHES.map((b) => (
             <button
               key={b}
@@ -288,7 +288,7 @@ export default function Roadmaps() {
               {/* Roadmap column */}
               <div className="flex-1 min-w-0">
                 {/* Phase legend */}
-                <div className="flex items-center gap-6 mb-10 px-4 py-3 bg-[#141414] border border-[#2a2a2a] rounded-lg overflow-x-auto">
+                <div className="flex items-center gap-6 mb-10 px-4 py-3 bg-[#141414] border border-[#2a2a2a] rounded-lg overflow-x-auto scrollbar-hide whitespace-nowrap">
                   {Object.entries(PHASE_STYLES).map(([phase, s], i) => (
                     <div key={phase} className="flex items-center gap-2 flex-shrink-0">
                       <div className={`w-2.5 h-2.5 rounded-full ${s.dot}`} />

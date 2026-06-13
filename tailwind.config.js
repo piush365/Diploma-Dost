@@ -29,9 +29,11 @@ export default {
         }
       },
       fontFamily: {
-        display: ['"Sora"', 'sans-serif'],
-        body: ['"DM Sans"', 'sans-serif'],
-        mono: ['"JetBrains Mono"', 'monospace'],
+        display: ['ClashDisplay', 'sans-serif'],
+        ui: ['CabinetGrotesk', 'sans-serif'],
+        body: ['GeneralSans', 'sans-serif'],
+        serif: ['Sentient', 'serif'],
+        mono: ['JetBrains Mono', 'monospace'],
       },
       borderRadius: {
         'xl': '1rem',

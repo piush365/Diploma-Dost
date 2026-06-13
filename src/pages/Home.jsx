@@ -43,7 +43,7 @@ export default function Home() {
 
       {/* ── HERO ───────────────────────────────── */}
       <section style={{
-        minHeight: '100vh',
+        minHeight: 'calc(100vh - 64px)',
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'center',
@@ -52,14 +52,7 @@ export default function Home() {
         overflow: 'hidden',
       }}>
 
-        {/* Top accent line */}
-        <div style={{
-          position: 'absolute',
-          top: 0, left: 0, right: 0,
-          height: '1px',
-          background: 'linear-gradient(90deg, transparent, var(--accent), transparent)',
-          opacity: 0.4,
-        }} />
+
 
         {/* Badge */}
         <div style={{
@@ -143,57 +136,55 @@ export default function Home() {
         </p>
 
         {/* CTAs */}
-        <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', marginBottom: '5rem' }}>
-          <Link to="/resources" className="btn-primary">
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-3 mb-20">
+          <Link to="/resources" className="btn-primary w-full sm:w-auto text-center justify-center">
             Explore Resources <ArrowRight size={15} />
           </Link>
-          <Link to="/predictor" className="btn-ghost">
+          <Link to="/predictor" className="btn-ghost w-full sm:w-auto text-center justify-center">
             College Predictor
           </Link>
         </div>
 
         {/* Stats row */}
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '0',
-          borderTop: '1px solid var(--border)',
-          paddingTop: '2rem',
-          flexWrap: 'wrap',
-        }}>
-          {stats.map((s, i) => (
-            <div key={s.label} style={{ display: 'flex', alignItems: 'center', gap: '0' }}>
-              <div style={{ paddingRight: '2.5rem' }}>
-                <div style={{
-                  fontFamily: 'var(--font-display)',
-                  fontWeight: 700,
-                  fontSize: 'clamp(1.5rem, 3vw, 2rem)',
-                  color: 'var(--text)',
-                  lineHeight: 1,
-                }}>
-                  {s.value}
-                </div>
-                <div style={{
-                  fontFamily: 'var(--font-mono)',
-                  fontSize: '0.6rem',
-                  letterSpacing: '0.1em',
-                  textTransform: 'uppercase',
-                  color: 'var(--text-muted)',
-                  marginTop: '4px',
-                }}>
-                  {s.label}
-                </div>
-              </div>
-              {i < stats.length - 1 && (
-                <div style={{
-                  width: '1px',
-                  height: '2rem',
-                  background: 'var(--border)',
-                  marginRight: '2.5rem',
-                }} />
-              )}
+        <div className="grid grid-cols-2 divide-x divide-[var(--border)] border-t border-[var(--border)] py-8">
+          {/* Left Column */}
+          <div className="flex flex-col gap-8 text-center">
+            <div className="flex flex-col items-center">
+              <span className="font-[var(--font-display)] font-bold text-2xl sm:text-3xl text-[var(--text)] leading-tight">
+                6
+              </span>
+              <span className="font-[var(--font-mono)] text-[0.6rem] tracking-[0.1em] uppercase text-[var(--text-muted)] mt-2">
+                BRANCHES
+              </span>
             </div>
-          ))}
+            <div className="flex flex-col items-center">
+              <span className="font-[var(--font-display)] font-bold text-2xl sm:text-3xl text-[var(--text)] leading-tight">
+                100%
+              </span>
+              <span className="font-[var(--font-mono)] text-[0.6rem] tracking-[0.1em] uppercase text-[var(--text-muted)] mt-2">
+                FREE
+              </span>
+            </div>
+          </div>
+          {/* Right Column */}
+          <div className="flex flex-col gap-8 text-center">
+            <div className="flex flex-col items-center">
+              <span className="font-[var(--font-display)] font-bold text-2xl sm:text-3xl text-[var(--text)] leading-tight">
+                13+
+              </span>
+              <span className="font-[var(--font-mono)] text-[0.6rem] tracking-[0.1em] uppercase text-[var(--text-muted)] mt-2">
+                FEATURES
+              </span>
+            </div>
+            <div className="flex flex-col items-center">
+              <span className="font-[var(--font-display)] font-bold text-2xl sm:text-3xl text-[var(--text)] leading-tight">
+                ∞
+              </span>
+              <span className="font-[var(--font-mono)] text-[0.6rem] tracking-[0.1em] uppercase text-[var(--text-muted)] mt-2">
+                RESOURCES
+              </span>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -330,17 +321,7 @@ export default function Home() {
         </div>
 
         {/* Features grid — 4 cols desktop, 3 tablet, 2 mobile; 12 items = clean 3 rows */}
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(4, 1fr)',
-          gap: '1px',
-          border: '1px solid var(--border)',
-          borderRadius: '1rem',
-          overflow: 'hidden',
-          background: 'var(--border)',
-        }}
-          className="features-grid"
-        >
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-[1px] border border-[var(--border)] rounded-[1.5rem] overflow-hidden bg-[var(--border)]">
           {features.map(({ icon: Icon, label, desc, path }) => (
             <Link
               key={path}
