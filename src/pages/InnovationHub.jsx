@@ -223,20 +223,20 @@ const HACKATHONS = [
 
 function ProjectCard({ project }) {
   return (
-    <div className="bg-[#141414] border border-[#2a2a2a] rounded-lg p-5 hover:border-[#e8453c]/40 transition-all group">
+    <div className="bg-[var(--surface)] border border-[var(--border)] rounded-lg p-5 hover:border-[var(--accent)]/40 transition-all group">
       <div className="flex items-start justify-between gap-3 mb-3">
         <div className="flex-1">
           <span className="font-['JetBrains_Mono'] text-[0.65rem] uppercase tracking-widest text-[#f0a843] bg-[#f0a84318] px-2 py-1 rounded-full font-bold">
             {project.domain}
           </span>
-          <h3 className="font-['Cabinet_Grotesk'] text-[1rem] font-semibold text-[#f0ede6] mt-2 group-hover:text-white transition-colors">
+          <h3 className="font-['Cabinet_Grotesk'] text-[1rem] font-semibold text-[var(--text)] mt-2 group-hover:text-white transition-colors">
             {project.name}
           </h3>
         </div>
-        <Code size={18} className="text-[#555] group-hover:text-[#e8453c] transition-colors flex-shrink-0 mt-1" strokeWidth={1.5} />
+        <Code size={18} className="text-[var(--text-muted)] group-hover:text-[var(--accent)] transition-colors flex-shrink-0 mt-1" strokeWidth={1.5} />
       </div>
 
-      <p className="font-['General_Sans'] text-[0.9rem] text-[#888] mb-3">{project.description}</p>
+      <p className="font-['General_Sans'] text-[0.9rem] text-[var(--text-muted)] mb-3">{project.description}</p>
 
       <div className="flex flex-wrap gap-1.5 mb-3">
         {project.tech.map((t) => (
@@ -261,13 +261,13 @@ function ResourceCard({ item }) {
       href={item.url}
       target="_blank"
       rel="noopener noreferrer"
-      className="bg-[#141414] border border-[#2a2a2a] rounded-lg p-4 hover:border-[#e8453c]/40 hover:bg-[#1a1a1a] transition-all group"
+      className="bg-[var(--surface)] border border-[var(--border)] rounded-lg p-4 hover:border-[var(--accent)]/40 hover:bg-[var(--surface2)] transition-all group"
     >
       <div className="flex items-start justify-between gap-2 mb-2">
-        <h4 className="font-['Cabinet_Grotesk'] text-[0.95rem] font-semibold text-[#f0ede6] group-hover:text-white transition-colors flex-1">
+        <h4 className="font-['Cabinet_Grotesk'] text-[0.95rem] font-semibold text-[var(--text)] group-hover:text-white transition-colors flex-1">
           {item.name}
         </h4>
-        <ArrowRight size={16} className="text-[#555] group-hover:text-[#e8453c] transition-colors flex-shrink-0 mt-0.5" strokeWidth={1.5} />
+        <ArrowRight size={16} className="text-[var(--text-muted)] group-hover:text-[var(--accent)] transition-colors flex-shrink-0 mt-0.5" strokeWidth={1.5} />
       </div>
       <p className="font-['General_Sans'] text-[0.85rem] text-[#888]">{item.desc}</p>
     </a>
@@ -287,17 +287,17 @@ function HackathonCard({ hackathon }) {
           <h4 className="font-['Cabinet_Grotesk'] text-[1rem] font-semibold text-[#f0ede6] group-hover:text-white transition-colors">
             {hackathon.name}
           </h4>
-          <p className="font-['General_Sans'] text-[0.85rem] text-[#888] mt-1">{hackathon.focus}</p>
+          <p className="font-['General_Sans'] text-[0.85rem] text-[var(--text-muted)] mt-1">{hackathon.focus}</p>
         </div>
         <Trophy size={20} className="text-[#4d9ef0] flex-shrink-0" strokeWidth={1.5} />
       </div>
 
-      <div className="space-y-1.5 text-[0.85rem] text-[#888]">
+      <div className="space-y-1.5 text-[0.85rem] text-[var(--text-muted)]">
         <p>
-          <strong className="text-[#f0ede6]">Prize:</strong> {hackathon.prize}
+          <strong className="text-[var(--text)]">Prize:</strong> {hackathon.prize}
         </p>
         <p>
-          <strong className="text-[#f0ede6]">When:</strong> {hackathon.when}
+          <strong className="text-[var(--text)]">When:</strong> {hackathon.when}
         </p>
       </div>
     </a>
@@ -331,8 +331,8 @@ function SkillMatrix() {
         </thead>
         <tbody>
           {skills.map((skill, i) => (
-            <tr key={i} className="border-b border-[#2a2a2a]/50 hover:bg-[#141414] transition-colors">
-              <td className="py-3 px-4 font-['General_Sans'] text-[#888]">{skill.name}</td>
+          <tr key={i} className="border-b border-[var(--border)]/50 hover:bg-[var(--surface)] transition-colors">
+            <td className="py-3 px-4 font-['General_Sans'] text-[var(--text-muted)]">{skill.name}</td>
               <td className="text-center py-3 px-4 font-['General_Sans'] text-[#4d9ef0]">{skill.micro}</td>
               <td className="text-center py-3 px-4 font-['General_Sans'] text-[#f0a843]">{skill.itr}</td>
               <td className="text-center py-3 px-4 font-['General_Sans'] text-[#e8453c]">{skill.capstone}</td>
@@ -356,7 +356,7 @@ export default function InnovationHub() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0d0e0f] text-[#f0ede6]">
+    <div className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
       <div className="max-w-6xl mx-auto px-6 py-20 pb-32">
 
         {/* Header */}
@@ -384,8 +384,8 @@ export default function InnovationHub() {
               onClick={() => setActiveTab(tab.id)}
               className={`font-['Cabinet_Grotesk'] text-[0.95rem] font-semibold px-4 py-2 rounded-lg transition-all ${
                 activeTab === tab.id
-                  ? "bg-[#e8453c] text-white"
-                  : "text-[#888] hover:text-[#f0ede6] border border-[#2a2a2a]"
+                  ? "bg-[var(--accent)] text-white"
+                  : "text-[var(--text-muted)] hover:text-[var(--text)] border border-[var(--border)]"
               }`}
             >
               {tab.icon} {tab.label}
@@ -394,16 +394,16 @@ export default function InnovationHub() {
         </div>
 
         {/* Project Description */}
-        <div className="mb-10 bg-[#141414] border border-[#2a2a2a] rounded-lg p-6">
+        <div className="mb-10 bg-[var(--surface)] border border-[var(--border)] rounded-lg p-6">
           <div className="flex items-start gap-4">
             <Lightbulb size={24} className="text-[#e8453c] flex-shrink-0 mt-1" strokeWidth={1.5} />
             <div>
-              <h3 className="font-['Cabinet_Grotesk'] text-[1rem] font-semibold text-[#f0ede6] mb-2">
+              <h3 className="font-['Cabinet_Grotesk'] text-[1rem] font-semibold text-[var(--text)] mb-2">
                 {activeTab === "micro" && "Micro-Projects (Semester 1-4)"}
                 {activeTab === "itr" && "ITR Projects (Semester 5)"}
                 {activeTab === "capstone" && "Capstone Projects (Semester 6)"}
               </h3>
-              <p className="font-['General_Sans'] text-[0.9rem] text-[#888]">
+              <p className="font-['General_Sans'] text-[0.9rem] text-[var(--text-muted)]">
                 {activeTab === "micro" && "Small, focused projects to build fundamentals. Perfect for beginners to practice core concepts and build confidence."}
                 {activeTab === "itr" && "Intermediate-to-advanced projects. Combine multiple technologies and demonstrate industry-ready skills."}
                 {activeTab === "capstone" && "Your magnum opus. Complex, full-featured systems that showcase mastery and innovation. Perfect for portfolios and interviews."}
@@ -476,9 +476,9 @@ export default function InnovationHub() {
             </h2>
           </div>
 
-          <div className="bg-[#141414] border border-[#2a2a2a] rounded-lg p-6 overflow-x-auto">
+          <div className="bg-[var(--surface)] border border-[var(--border)] rounded-lg p-6 overflow-x-auto">
             <SkillMatrix />
-            <p className="font-['General_Sans'] text-[0.8rem] text-[#888] mt-4">
+            <p className="font-['General_Sans'] text-[0.8rem] text-[var(--text-muted)] mt-4">
               ✓ = Required | ◐ = Helpful | ✗ = Not needed
             </p>
           </div>
@@ -497,7 +497,7 @@ export default function InnovationHub() {
 
           {RESOURCES.map((resourceGroup, i) => (
             <div key={i} className="mb-10">
-              <h3 className="font-['Cabinet_Grotesk'] text-[1.1rem] font-semibold text-[#f0ede6] mb-4 flex items-center gap-2">
+              <h3 className="font-['Cabinet_Grotesk'] text-[1.1rem] font-semibold text-[var(--text)] mb-4 flex items-center gap-2">
                 <FaGithub size={20} className="text-[#c8f04d]" strokeWidth={1.5} />
                 {resourceGroup.category}
               </h3>
@@ -511,11 +511,11 @@ export default function InnovationHub() {
         </div>
 
         {/* CTA Section */}
-        <div className="bg-gradient-to-r from-[#e8453c]/10 to-[#4d9ef0]/10 border border-[#2a2a2a] rounded-lg p-8 text-center">
-          <h3 className="font-['Cabinet_Grotesk'] text-[1.3rem] font-semibold text-[#f0ede6] mb-3">
+        <div className="bg-gradient-to-r from-[#e8453c]/10 to-[#4d9ef0]/10 border border-[var(--border)] rounded-lg p-8 text-center">
+          <h3 className="font-['Cabinet_Grotesk'] text-[1.3rem] font-semibold text-[var(--text)] mb-3">
             Ready to Build Something Amazing?
           </h3>
-          <p className="font-['General_Sans'] text-[0.95rem] text-[#888] mb-6 max-w-[500px] mx-auto">
+          <p className="font-['General_Sans'] text-[0.95rem] text-[var(--text-muted)] mb-6 max-w-[500px] mx-auto">
             Pick a project, start coding, and share your progress with the community. Every expert was once a beginner.
           </p>
           <a

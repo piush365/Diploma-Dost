@@ -32,8 +32,8 @@ export default function App() {
         <main className="pt-20">
           <ErrorBoundary>
             <Suspense fallback={
-            <div className="min-h-screen bg-[#0d0e0f] flex items-center justify-center">
-              <Loader2 className="animate-spin text-[#e8453c]" size={40} />
+            <div className="min-h-screen bg-[var(--bg)] flex items-center justify-center">
+              <Loader2 className="animate-spin text-[var(--accent)]" size={40} />
             </div>
           }>
               <Routes>

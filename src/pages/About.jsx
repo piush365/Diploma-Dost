@@ -33,7 +33,7 @@ const TEAM_MEMBERS = [
   {
     name: 'Anjali',
     role: 'Backend (Supabase)',
-    github: null,
+    github: 'Anjali0424',
     avatar: 'https://aujimkqsmxjaeusspxtp.supabase.co/storage/v1/object/public/model/Anjali.jpeg',
     advice: "Master SQL fundamentals early. It's the backbone of almost every application you'll ever touch.",
   },

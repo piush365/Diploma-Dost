@@ -1,27 +1,37 @@
 import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { Menu, X } from 'lucide-react'
-
+import { Menu, X, Moon, Sun } from 'lucide-react'
 const navLinks = [
-  { label: 'Resources',   path: '/resources' },
-  { label: 'Roadmaps',    path: '/roadmaps' },
-  { label: 'Predictor',   path: '/predictor' },
+  { label: 'Resources', path: '/resources' },
+  { label: 'Roadmaps', path: '/roadmaps' },
+  { label: 'Predictor', path: '/predictor' },
   { label: 'Innovations', path: '/innovation-hub' },
-  { label: 'DSA & CP',    path: '/dsa' },
-  { label: 'YouTube',     path: '/youtube' },
+  { label: 'DSA & CP', path: '/dsa' },
+  { label: 'YouTube', path: '/youtube' },
   { label: 'Internships', path: '/internships' },
-  { label: 'Community',   path: '/community' },
-  { label: 'About',       path: '/about' },
+  { label: 'Community', path: '/community' },
+  { label: 'About', path: '/about' },
 ]
 
 export default function Navbar() {
   const [open, setOpen] = useState(false)
   const { pathname } = useLocation()
 
+  const [darkMode, setDarkMode] = useState(true)
+
+  const toggleTheme = () => {
+    setDarkMode(!darkMode)
+
+    if (darkMode) {
+      document.documentElement.classList.add('light-theme')
+    } else {
+      document.documentElement.classList.remove('light-theme')
+    }
+  }
   return (
     <nav
       style={{
-        background: 'rgba(13, 14, 15, 0.85)',
+        background: 'var(--surface)',
         borderBottom: '1px solid var(--border)',
         backdropFilter: 'blur(12px)',
         WebkitBackdropFilter: 'blur(12px)',
@@ -75,18 +85,18 @@ export default function Navbar() {
             const isActive = pathname === link.path
             return (
               <Link
-          key={link.path}
-          to={link.path}
-          className={`font-ui text-sm px-2 py-2 rounded-lg transition-colors duration-200 outline-none ${isActive ? 'text-[#e8453c] bg-[#e8453c]/10' : 'text-[#888] hover:text-[#f0ede6] hover:bg-[#1a1a1a]'}`}
-          onFocus={e => {
-            e.currentTarget.style.boxShadow = '0 0 0 2px var(--accent)'
-          }}
-          onBlur={e => {
-            e.currentTarget.style.boxShadow = 'none'
-          }}
-        >
-          {link.label}
-        </Link>
+                key={link.path}
+                to={link.path}
+                className={`font-ui text-sm px-2 py-2 rounded-lg transition-colors duration-200 outline-none ${isActive ? 'text-[var(--accent)] bg-[var(--accent)]/10' : 'text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--surface2)]'}`}
+                onFocus={e => {
+                  e.currentTarget.style.boxShadow = '0 0 0 2px var(--accent)'
+                }}
+                onBlur={e => {
+                  e.currentTarget.style.boxShadow = 'none'
+                }}
+              >
+                {link.label}
+              </Link>
             )
           })}
         </div>
@@ -105,12 +115,20 @@ export default function Navbar() {
           >
             College Predictor
           </Link>
+
+          <button
+            onClick={toggleTheme}
+            aria-label="Toggle Theme"
+            className="p-2 rounded-full border border-[var(--border)] hover:bg-[var(--surface2)] transition-all duration-200"
+          >
+            {darkMode ? <Sun size={20} /> : <Moon size={20} />}
+          </button>
         </div>
 
         {/* ── Mobile right: hamburger ── */}
         <div className="md:hidden flex items-center">
           <button
-            className="p-2 rounded-lg text-[#888] hover:text-[#f0ede6] transition-colors duration-200 outline-none"
+            className="p-2 rounded-lg text-[var(--text-muted)] hover:text-[var(--text)] transition-colors duration-200 outline-none"
             onClick={() => setOpen(!open)}
             aria-label={open ? 'Close menu' : 'Open menu'}
             onFocus={e => {
@@ -128,32 +146,34 @@ export default function Navbar() {
       </div>
 
       {/* ── Mobile menu ── */}
-      {open && (
-        <div
-          className="md:hidden px-4 pb-4 flex flex-col gap-1"
-          style={{ borderTop: '1px solid var(--border)' }}
-        >
-          {navLinks.map(link => {
-            const isActive = pathname === link.path
-            return (
-              <Link
-                key={link.path}
-                to={link.path}
-                onClick={() => setOpen(false)}
-                className={`font-ui text-base px-4 py-3 rounded-lg transition-colors duration-200 outline-none ${isActive ? 'text-[#e8453c] bg-[#e8453c]/10' : 'text-[#888] hover:text-[#f0ede6] hover:bg-[#1a1a1a]'}`}
-                onFocus={e => {
-                  e.currentTarget.style.boxShadow = '0 0 0 2px var(--accent)'
-                }}
-                onBlur={e => {
-                  e.currentTarget.style.boxShadow = 'none'
-                }}
-              >
-                {link.label}
-              </Link>
-            )
-          })}
-        </div>
-      )}
-    </nav>
+      {
+        open && (
+          <div
+            className="md:hidden px-4 pb-4 flex flex-col gap-1"
+            style={{ borderTop: '1px solid var(--border)' }}
+          >
+            {navLinks.map(link => {
+              const isActive = pathname === link.path
+              return (
+                <Link
+                  key={link.path}
+                  to={link.path}
+                  onClick={() => setOpen(false)}
+                  className={`font-ui text-base px-4 py-3 rounded-lg transition-colors duration-200 outline-none ${isActive ? 'text-[var(--accent)] bg-[var(--accent)]/10' : 'text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--surface2)]'}`}
+                  onFocus={e => {
+                    e.currentTarget.style.boxShadow = '0 0 0 2px var(--accent)'
+                  }}
+                  onBlur={e => {
+                    e.currentTarget.style.boxShadow = 'none'
+                  }}
+                >
+                  {link.label}
+                </Link>
+              )
+            })}
+          </div>
+        )
+      }
+    </nav >
   )
 }

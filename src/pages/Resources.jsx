@@ -36,9 +36,9 @@ function SessionPill({ session, link }) {
       target="_blank"
       rel="noopener noreferrer"
       className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg
-                 border border-[#2a2a2a] bg-[#141414]
-                 text-[#f0ede6] text-xs font-['General_Sans'] font-medium
-                 hover:border-[#e8453c] hover:text-[#e8453c] hover:bg-[#e8453c]/5
+                 border border-[var(--border)] bg-[var(--surface)]
+                 text-[var(--text)] text-xs font-['General_Sans'] font-medium
+                 hover:border-[var(--accent)] hover:text-[var(--accent)] hover:bg-[var(--accent)]/5
                  transition-all duration-150 whitespace-nowrap"
     >
       <Download size={11} strokeWidth={2} />
@@ -58,24 +58,24 @@ function SubjectCard({ subjectName, courseCode, entries }) {
   }, {});
 
   return (
-    <div className="border border-[#2a2a2a] rounded-lg bg-[#141414] p-5 hover:border-[#e8453c]/30 transition-colors duration-150">
+    <div className="border border-[var(--border)] rounded-lg bg-[var(--surface)] p-5 hover:border-[var(--accent)]/30 transition-colors duration-150">
       {/* subject name + code */}
       <div className="flex items-start justify-between gap-3 mb-4">
         <div className="min-w-0">
-          <h3 className="font-['Cabinet_Grotesk'] font-semibold text-[#f0ede6] text-[1rem] leading-snug mb-1">
+          <h3 className="font-['Cabinet_Grotesk'] font-semibold text-[var(--text)] text-[1rem] leading-snug mb-1">
             {subjectName}
           </h3>
-          <span className="font-['JetBrains_Mono'] text-[0.7rem] text-[#888] tracking-wider">
+          <span className="font-['JetBrains_Mono'] text-[0.7rem] text-[var(--text-muted)] tracking-wider">
             {courseCode}
           </span>
         </div>
-        <span className="shrink-0 font-['JetBrains_Mono'] text-[0.65rem] text-[#888] bg-[#1a1a1a] px-2 py-1 rounded">
+        <span className="shrink-0 font-['JetBrains_Mono'] text-[0.65rem] text-[var(--text-muted)] bg-[var(--surface2)] px-2 py-1 rounded">
           {Object.values(byType).reduce((sum, items) => sum + items.length, 0)} items
         </span>
       </div>
 
       {/* type groups */}
-      <div className="flex flex-col gap-3 pt-3 border-t border-[#2a2a2a]">
+      <div className="flex flex-col gap-3 pt-3 border-t border-[var(--border)]">
         {Object.entries(byType).map(([type, items]) => {
           const config = TYPE_CONFIG[type] || TYPE_CONFIG.Notes;
           return (
@@ -122,9 +122,9 @@ function Dropdown({ value, onChange, options, labelMap, placeholder }) {
       <button
         onClick={() => setOpen((v) => !v)}
         className="flex items-center gap-2 px-4 py-2.5
-                   border border-[#2a2a2a] rounded-lg bg-[#141414]
-                   font-['General_Sans'] text-sm text-[#f0ede6]
-                   hover:border-[#888] focus:border-[#e8453c] focus:outline-none
+                   border border-[var(--border)] rounded-lg bg-[var(--surface)]
+                   font-['General_Sans'] text-sm text-[var(--text)]
+                   hover:border-[var(--text-muted)] focus:border-[var(--accent)] focus:outline-none
                    transition-colors duration-150
                    min-w-[160px] justify-between"
       >
@@ -132,7 +132,7 @@ function Dropdown({ value, onChange, options, labelMap, placeholder }) {
         <ChevronDown
           size={14}
           strokeWidth={2}
-          className={`text-[#888] transition-transform duration-150 ${open ? "rotate-180" : ""}`}
+          className={`text-[var(--text-muted)] transition-transform duration-150 ${open ? "rotate-180" : ""}`}
         />
       </button>
 
@@ -140,7 +140,7 @@ function Dropdown({ value, onChange, options, labelMap, placeholder }) {
         <>
           <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
           <div className="absolute top-full left-0 mt-1 z-20
-                          border border-[#2a2a2a] rounded-lg bg-[#141414]
+                          border border-[var(--border)] rounded-lg bg-[var(--surface)]
                           shadow-xl min-w-full overflow-hidden">
             {options.map((opt) => (
               <button
@@ -148,8 +148,8 @@ function Dropdown({ value, onChange, options, labelMap, placeholder }) {
                 onClick={() => { onChange(opt); setOpen(false); }}
                 className={`w-full text-left px-4 py-2.5
                             font-['General_Sans'] text-sm
-                            hover:bg-[#1a1a1a] transition-colors duration-100
-                            ${value === opt ? "text-[#e8453c] bg-[#e8453c]/5" : "text-[#f0ede6]"}`}
+                            hover:bg-[var(--surface2)] transition-colors duration-100
+                            ${value === opt ? "text-[var(--accent)] bg-[var(--accent)]/5" : "text-[var(--text)]"}`}
               >
                 {labelMap ? labelMap[opt] || opt : opt}
               </button>
@@ -216,21 +216,21 @@ export default function Resources() {
         <p className="font-['JetBrains_Mono'] text-[0.65rem] uppercase tracking-[0.14em] text-[#e8453c] mb-3 font-bold">
           Study Material
         </p>
-        <h1 className="font-['Clash_Display'] font-semibold text-[#f0ede6] leading-[1.08]
+        <h1 className="font-['Clash_Display'] font-semibold text-[var(--text)] leading-[1.08]
                        text-[clamp(2rem,5vw,3.25rem)] mb-3 letter-spacing-tight">
           Resources
         </h1>
-        <p className="font-['General_Sans'] text-[#888] text-base max-w-[560px] leading-relaxed">
+        <p className="font-['General_Sans'] text-[var(--text-muted)] text-base max-w-[560px] leading-relaxed">
           PYQs, model answers, and notes for every subject — download directly from Google Drive.
         </p>
       </div>
 
       {/* ── filters ── */}
-      <div className="mb-10 pb-6 border-b border-[#2a2a2a]">
+      <div className="mb-10 pb-6 border-b border-[var(--border)]">
 
         {/* branch tabs */}
         <div className="mb-4">
-          <p className="font-['JetBrains_Mono'] text-[0.65rem] uppercase tracking-[0.12em] text-[#888] mb-3 font-bold">
+          <p className="font-['JetBrains_Mono'] text-[0.65rem] uppercase tracking-[0.12em] text-[var(--text-muted)] mb-3 font-bold">
             Branch
           </p>
           <div className="flex flex-wrap gap-2">
@@ -242,14 +242,14 @@ export default function Resources() {
                             border transition-all duration-150
                             ${branch === b
                               ? "border-[#e8453c] bg-[#e8453c]/5"
-                              : "border-[#2a2a2a] bg-transparent hover:border-[#888] hover:bg-[#141414]"
+                              : "border-[var(--border)] bg-transparent hover:border-[var(--text-muted)] hover:bg-[var(--surface)]"
                             }`}
               >
                 <span className={`font-['JetBrains_Mono'] text-[0.78rem] font-bold tracking-wider
-                                  ${branch === b ? "text-[#e8453c]" : "text-[#f0ede6]"}`}>
+                                  ${branch === b ? "text-[var(--accent)]" : "text-[var(--text)]"}`}>
                   {b}
                 </span>
-                <span className="font-['General_Sans'] text-[0.68rem] text-[#888] whitespace-nowrap hidden sm:block">
+                <span className="font-['General_Sans'] text-[0.68rem] text-[var(--text-muted)] whitespace-nowrap hidden sm:block">
                   {BRANCH_LABELS[b]}
                 </span>
               </button>
@@ -260,7 +260,7 @@ export default function Resources() {
         {/* semester + type dropdowns */}
         <div className="flex flex-wrap gap-3 mt-4">
           <div className="flex flex-col gap-2">
-            <label className="font-['JetBrains_Mono'] text-[0.65rem] uppercase tracking-[0.12em] text-[#888] font-bold">
+            <label className="font-['JetBrains_Mono'] text-[0.65rem] uppercase tracking-[0.12em] text-[var(--text-muted)] font-bold">
               Semester
             </label>
             <Dropdown
@@ -271,7 +271,7 @@ export default function Resources() {
             />
           </div>
           <div className="flex flex-col gap-2">
-            <label className="font-['JetBrains_Mono'] text-[0.65rem] uppercase tracking-[0.12em] text-[#888] font-bold">
+            <label className="font-['JetBrains_Mono'] text-[0.65rem] uppercase tracking-[0.12em] text-[var(--text-muted)] font-bold">
               Type
             </label>
             <Dropdown
@@ -289,9 +289,9 @@ export default function Resources() {
 
         {loading && (
           <div className="flex flex-col items-center gap-3 py-24
-                          font-['General_Sans'] text-[#888] text-sm">
+                        font-['General_Sans'] text-[var(--text-muted)] text-sm">
             <Loader2 size={28} className="text-[#e8453c] animate-spin" />
-            <p className="font-['Cabinet_Grotesk'] font-semibold text-[#f0ede6]">Loading resources…</p>
+            <p className="font-['Cabinet_Grotesk'] font-semibold text-[var(--text)]">Loading resources…</p>
             <p className="text-[0.85rem]">Fetching study materials for {BRANCH_LABELS[branch]} Semester {semester}</p>
           </div>
         )}
@@ -301,22 +301,22 @@ export default function Resources() {
                           font-['General_Sans'] text-[#e8453c] text-sm text-center">
             <p className="font-['Cabinet_Grotesk'] font-semibold">Could not load resources</p>
             <p>Check your connection and try again.</p>
-            <code className="font-['JetBrains_Mono'] text-[0.7rem] opacity-55 mt-2 bg-[#1a1a1a] px-2 py-1 rounded">{error}</code>
+            <code className="font-['JetBrains_Mono'] text-[0.7rem] opacity-55 mt-2 bg-[var(--surface2)] px-2 py-1 rounded text-[var(--text)]">{error}</code>
           </div>
         )}
 
         {!loading && !error && subjects.length === 0 && (
           <div className="flex flex-col items-center gap-3 py-24
-                          font-['General_Sans'] text-[#888] text-sm text-center">
+                        font-['General_Sans'] text-[var(--text-muted)] text-sm text-center">
             <FileText size={40} strokeWidth={1.2} />
-            <p className="font-['Cabinet_Grotesk'] font-semibold text-[#f0ede6]">No resources yet</p>
+            <p className="font-['Cabinet_Grotesk'] font-semibold text-[var(--text)]">No resources yet</p>
             <p className="text-[0.85rem] max-w-[300px]">No resources found for {BRANCH_LABELS[branch]} — Semester {semester}. More content being added soon.</p>
           </div>
         )}
 
         {!loading && !error && subjects.length > 0 && (
           <div>
-            <p className="font-['JetBrains_Mono'] text-[0.7rem] text-[#888]
+            <p className="font-['JetBrains_Mono'] text-[0.7rem] text-[var(--text-muted)]
                           tracking-wider uppercase mb-4 font-bold">
               {subjects.length} subject{subjects.length !== 1 ? "s" : ""}
               {typeFilter !== "All" ? ` · ${typeFilter}` : ""}

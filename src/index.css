@@ -108,6 +108,34 @@
     --font-mono:    'JetBrains Mono', monospace;
   }
 
+  .theme-card {
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+
+.theme-text {
+  color: var(--text);
+}
+
+.theme-muted {
+  color: var(--text-muted);
+}
+
+ .light-theme {
+  --bg: #f8fafc;
+  --surface: #ffffff;
+  --surface2: #f1f5f9;
+
+  --border: #cbd5e1;
+
+  --text: #0f172a;
+  --text-muted: #475569;
+
+  --accent: #e8453c;
+  --accent-lime: #65a30d;
+}
+
   *,
   *::before,
   *::after {
@@ -245,6 +273,27 @@
   .bg-surface  { background-color: var(--surface); }
   .bg-surface2 { background-color: var(--surface2); }
   .border-dim  { border-color: var(--border); }
+
+  /* ── Theme-aware utility overrides for hardcoded Tailwind colors ── */
+  .bg-\[\#0d0e0f\] { background-color: var(--bg) !important; }
+  .bg-\[\#141414\] { background-color: var(--surface) !important; }
+  .bg-\[\#1a1a1a\] { background-color: var(--surface2) !important; }
+  .bg-\[\#0f0f0f\] { background-color: var(--surface2) !important; }
+
+  .border-\[\#2a2a2a\] { border-color: var(--border) !important; }
+  .border-\[\#1a1a1a\] { border-color: var(--border) !important; }
+  .border-\[\#0f0f0f\] { border-color: var(--border) !important; }
+
+  .text-\[\#f0ede6\] { color: var(--text) !important; }
+  .text-\[\#888\] { color: var(--text-muted) !important; }
+  .text-\[\#555\] { color: var(--text-muted) !important; }
+
+  .hover\:text-\[\#f0ede6\]:hover { color: var(--text) !important; }
+  .hover\:bg-\[\#1a1a1a\]:hover { background-color: var(--surface2) !important; }
+  .hover\:bg-\[\#141414\]:hover { background-color: var(--surface) !important; }
+  .hover\:border-\[\#2a2a2a\]:hover { border-color: var(--border) !important; }
+  .hover\:border-\[\#3a3a3a\]:hover { border-color: var(--border) !important; }
+  .hover\:border-\[\#888\]:hover { border-color: var(--border) !important; }
 
   /* ── YouTube card play overlay ── */
   a:hover .play-overlay {

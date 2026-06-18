@@ -123,14 +123,14 @@ const NOTICES = [
 function SectionHeader({ eyebrow, title, subtitle }) {
   return (
     <div className="mb-8">
-      <p className="font-['JetBrains_Mono'] text-[0.65rem] uppercase tracking-[0.14em] text-[#e8453c] mb-2 font-bold">
+      <p className="font-['JetBrains_Mono'] text-[0.65rem] uppercase tracking-[0.14em] text-[var(--accent)] mb-2 font-bold">
         {eyebrow}
       </p>
-      <h2 className="font-['Clash_Display'] text-[clamp(1.5rem,3vw,2.5rem)] font-semibold text-[#f0ede6] leading-tight mb-2">
+      <h2 className="font-['Clash_Display'] text-[clamp(1.5rem,3vw,2.5rem)] font-semibold text-[var(--text)] leading-tight mb-2">
         {title}
       </h2>
       {subtitle && (
-        <p className="font-['General_Sans'] text-[0.95rem] text-[#888] max-w-[560px] leading-relaxed">
+        <p className="font-['General_Sans'] text-[0.95rem] text-[var(--text-muted)] max-w-[560px] leading-relaxed">
           {subtitle}
         </p>
       )}
@@ -145,9 +145,9 @@ function TimelineSection() {
   const visible = expanded ? TERM_SCHEDULE : TERM_SCHEDULE.slice(0, 10);
 
   const statusConfig = {
-    done:     { dot: "bg-[#2a2a2a]", text: "text-[#666]", dateTxt: "text-[#555]", icon: CheckCircle },
-    current:  { dot: "bg-[#e8453c] ring-4 ring-[#e8453c]/20", text: "text-[#f0ede6] font-semibold", dateTxt: "text-[#e8453c]", icon: Clock },
-    upcoming: { dot: "bg-[#2a2a2a] border-2 border-[#4d9ef0]", text: "text-[#888]", dateTxt: "text-[#666]", icon: Calendar },
+    done:     { dot: "bg-[var(--border)]", text: "text-[var(--text-muted)]", dateTxt: "text-[var(--text-muted)]", icon: CheckCircle },
+    current:  { dot: "bg-[var(--accent)] ring-4 ring-[var(--accent)]/20", text: "text-[var(--text)] font-semibold", dateTxt: "text-[var(--accent)]", icon: Clock },
+    upcoming: { dot: "bg-[var(--border)] border-2 border-[#4d9ef0]", text: "text-[var(--text-muted)]", dateTxt: "text-[var(--text-muted)]", icon: Calendar },
   };
 
   return (
@@ -156,7 +156,7 @@ function TimelineSection() {
       
       <div className="relative">
         {/* vertical line */}
-        <div className="absolute left-[15px] top-6 bottom-0 w-0.5 bg-gradient-to-b from-[#e8453c] via-[#2a2a2a] to-[#2a2a2a]" />
+        <div className="absolute left-[15px] top-6 bottom-0 w-0.5 bg-gradient-to-b from-[var(--accent)] via-[var(--border)] to-[var(--border)]" />
         
         <div className="space-y-4">
           {visible.map((item, i) => {
@@ -186,7 +186,7 @@ function TimelineSection() {
       {!expanded && TERM_SCHEDULE.length > visible.length && (
         <button
           onClick={() => setExpanded(true)}
-          className="mt-6 inline-flex items-center gap-2 font-['General_Sans'] text-[0.9rem] text-[#e8453c] hover:text-[#f0a843] transition-colors"
+          className="mt-6 inline-flex items-center gap-2 font-['General_Sans'] text-[0.9rem] text-[var(--accent)] hover:text-[#f0a843] transition-colors"
         >
           <ChevronDown size={16} strokeWidth={2} />
           Show all {TERM_SCHEDULE.length} dates
@@ -216,7 +216,7 @@ function NoticesSection() {
         {NOTICES.map((n, i) => (
           <div
             key={i}
-            className="bg-[#141414] border border-[#2a2a2a] rounded-lg p-5 hover:border-[#e8453c]/30 transition-colors duration-150"
+            className="bg-[var(--surface)] border border-[var(--border)] rounded-lg p-5 hover:border-[var(--accent)]/30 transition-colors duration-150"
           >
             <div className="flex items-start justify-between gap-3 mb-3">
               <span
@@ -226,10 +226,10 @@ function NoticesSection() {
                 {n.tag}
               </span>
             </div>
-            <h3 className="font-['Cabinet_Grotesk'] text-[1rem] font-semibold text-[#f0ede6] mb-2">
+            <h3 className="font-['Cabinet_Grotesk'] text-[1rem] font-semibold text-[var(--text)] mb-2">
               {n.title}
             </h3>
-            <p className="font-['General_Sans'] text-[0.9rem] text-[#888] leading-relaxed mb-3">
+            <p className="font-['General_Sans'] text-[0.9rem] text-[var(--text-muted)] leading-relaxed mb-3">
               {n.desc}
             </p>
             {n.link && (
@@ -264,7 +264,7 @@ function QuickLinksSection() {
             href={link.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="group flex items-center gap-3 p-4 bg-[#141414] border border-[#2a2a2a] rounded-lg hover:border-[#e8453c]/40 hover:bg-[#1a1a1a] transition-all duration-150"
+            className="group flex items-center gap-3 p-4 bg-[var(--surface)] border border-[var(--border)] rounded-lg hover:border-[var(--accent)]/40 hover:bg-[var(--surface2)] transition-all duration-150"
           >
             <span
               className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors"
@@ -277,10 +277,10 @@ function QuickLinksSection() {
               {link.icon === 'id-card' && <FileText size={18} strokeWidth={1.5} />}
               {link.icon === 'download' && <ExternalLink size={18} strokeWidth={1.5} />}
             </span>
-            <span className="font-['Cabinet_Grotesk'] text-[0.95rem] font-semibold text-[#f0ede6] flex-1 leading-snug">
+            <span className="font-['Cabinet_Grotesk'] text-[0.95rem] font-semibold text-[var(--text)] flex-1 leading-snug">
               {link.label}
             </span>
-            <ExternalLink size={14} strokeWidth={1.5} className="text-[#555] group-hover:text-[#e8453c] transition-colors flex-shrink-0" />
+            <ExternalLink size={14} strokeWidth={1.5} className="text-[var(--text-muted)] group-hover:text-[var(--accent)] transition-colors flex-shrink-0" />
           </a>
         ))}
       </div>
@@ -301,9 +301,9 @@ function RecheckingSection() {
         subtitle="Step-by-step process to request photocopy or re-evaluation of your answer sheets."
       />
 
-      <div className="bg-[#1a1a1a] border border-[#c8f04d]/20 rounded-lg px-5 py-4 mb-6 flex gap-3">
-        <AlertCircle size={18} className="text-[#c8f04d] flex-shrink-0 mt-0.5" strokeWidth={1.5} />
-        <p className="font-['General_Sans'] text-[0.9rem] text-[#888] leading-relaxed">
+      <div className="bg-[var(--surface2)] border border-[var(--accent-lime)]/20 rounded-lg px-5 py-4 mb-6 flex gap-3">
+        <AlertCircle size={18} className="text-[var(--accent-lime)] flex-shrink-0 mt-0.5" strokeWidth={1.5} />
+        <p className="font-['General_Sans'] text-[0.9rem] text-[var(--text-muted)] leading-relaxed">
           The rechecking window opens roughly 1–2 days after results are published and stays open for only 2–3 days. Watch msbte.ac.in and your college notice board closely right after results.
         </p>
       </div>
@@ -314,32 +314,32 @@ function RecheckingSection() {
           return (
             <div
               key={i}
-              className={`border rounded-lg overflow-hidden transition-all ${isOpen ? "border-[#e8453c]/40 bg-[#141414]" : "border-[#2a2a2a] bg-[#0f0f0f] hover:border-[#2a2a2a]"}`}
+              className={`border rounded-lg overflow-hidden transition-all ${isOpen ? "border-[var(--accent)]/40 bg-[var(--surface)]" : "border-[var(--border)] bg-[var(--surface2)] hover:border-[var(--border)]"}`}
             >
               <button
                 onClick={() => setOpenStep(isOpen ? null : i)}
-                className="w-full flex items-center gap-4 px-5 py-4 text-left hover:bg-[#1a1a1a] transition-colors"
+                className="w-full flex items-center gap-4 px-5 py-4 text-left hover:bg-[var(--surface2)] transition-colors"
               >
-                <span className="font-['Clash_Display'] text-[1.2rem] font-bold text-[#e8453c] flex-shrink-0 w-8">
+                <span className="font-['Clash_Display'] text-[1.2rem] font-bold text-[var(--accent)] flex-shrink-0 w-8">
                   {s.step}
                 </span>
-                <span className="font-['Cabinet_Grotesk'] text-[1rem] font-semibold text-[#f0ede6] flex-1">
+                <span className="font-['Cabinet_Grotesk'] text-[1rem] font-semibold text-[var(--text)] flex-1">
                   {s.title}
                 </span>
                 <ChevronDown
                   size={18}
                   strokeWidth={2}
-                  className={`text-[#888] transition-transform flex-shrink-0 ${isOpen ? "rotate-180" : ""}`}
+                  className={`text-[var(--text-muted)] transition-transform flex-shrink-0 ${isOpen ? "rotate-180" : ""}`}
                 />
               </button>
               {isOpen && (
-                <div className="px-5 pb-5 pl-20 space-y-3 border-t border-[#1a1a1a]">
-                  <p className="font-['General_Sans'] text-[0.95rem] text-[#888] leading-relaxed">
+                <div className="px-5 pb-5 pl-20 space-y-3 border-t border-[var(--border)]">
+                  <p className="font-['General_Sans'] text-[0.95rem] text-[var(--text-muted)] leading-relaxed">
                     {s.desc}
                   </p>
                   {s.note && (
-                    <div className="bg-[#e8453c]/8 border border-[#e8453c]/20 rounded-lg px-4 py-3">
-                      <p className="font-['General_Sans'] text-[0.9rem] text-[#e8453c] leading-relaxed">
+                    <div className="bg-[var(--accent)]/8 border border-[var(--accent)]/20 rounded-lg px-4 py-3">
+                      <p className="font-['General_Sans'] text-[0.9rem] text-[var(--accent)] leading-relaxed">
                         <strong>⚠️ {s.note.split(':')[0]}:</strong> {s.note.split(':')[1]}
                       </p>
                     </div>
@@ -352,19 +352,19 @@ function RecheckingSection() {
       </div>
 
       {/* Fees Table */}
-      <div className="bg-[#141414] border border-[#2a2a2a] rounded-lg overflow-hidden mb-6">
-        <div className="px-5 py-4 border-b border-[#2a2a2a]">
-          <p className="font-['JetBrains_Mono'] text-[0.65rem] uppercase tracking-[0.12em] text-[#888] font-bold">
+      <div className="bg-[var(--surface)] border border-[var(--border)] rounded-lg overflow-hidden mb-6">
+        <div className="px-5 py-4 border-b border-[var(--border)]">
+          <p className="font-['JetBrains_Mono'] text-[0.65rem] uppercase tracking-[0.12em] text-[var(--text-muted)] font-bold">
             Fee Reference
           </p>
         </div>
-        <div className="divide-y divide-[#1a1a1a]">
+        <div className="divide-y divide-[var(--border)]">
           {FEES.map((f, i) => (
-            <div key={i} className="flex items-center justify-between px-5 py-3.5 hover:bg-[#1a1a1a] transition-colors">
-              <span className="font-['General_Sans'] text-[0.95rem] text-[#888]">
+            <div key={i} className="flex items-center justify-between px-5 py-3.5 hover:bg-[var(--surface2)] transition-colors">
+              <span className="font-['General_Sans'] text-[0.95rem] text-[var(--text-muted)]">
                 {f.item}
               </span>
-              <span className="font-['JetBrains_Mono'] text-[0.9rem] font-bold text-[#c8f04d]">
+              <span className="font-['JetBrains_Mono'] text-[0.9rem] font-bold text-[var(--accent-lime)]">
                 {f.amount}
               </span>
             </div>
