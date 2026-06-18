@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { ROADMAPS } from "../data/roadmaps";
-import { ChevronRight, X, BookOpen, Play, Code, CheckCircle, Flag } from "lucide-react";
+import { ChevronRight, X, BookOpen, Play, Code, Flag } from "lucide-react";
 import { FaGithub } from 'react-icons/fa';
 
 const BRANCHES = ["CS", "IT", "Mech", "Civil", "Elec", "ETC"];
@@ -146,7 +146,7 @@ function RoadmapNode({ node, onClick, isLast }) {
   const isBranch = node.type === "branch";
 
   return (
-    <div className="flex flex-col items-center w-full">
+    <div id={node.id} className="flex flex-col items-center w-full scroll-mt-24">
       <button
         onClick={() => onClick(node)}
         className={`w-full max-w-[440px] text-left rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4 transition-all duration-150 group relative ${nodeStyle}`}

@@ -21,6 +21,7 @@ const Scholarships = lazy(() => import('./pages/Scholarships'))
 const Placement    = lazy(() => import('./pages/Placement'))
 const OpenSource   = lazy(() => import('./pages/OpenSource'))
 const About        = lazy(() => import('./pages/About'))
+const Search       = lazy(() => import('./pages/Search'))
 
 export default function App() {
   return (
@@ -51,6 +52,7 @@ export default function App() {
                 <Route path="/placement"     element={<Placement />} />
                 <Route path="/opensource"    element={<OpenSource />} />
                 <Route path="/about"         element={<About />} />
+                <Route path="/search"        element={<Search />} />
               </Routes>
             </Suspense>
           </ErrorBoundary>

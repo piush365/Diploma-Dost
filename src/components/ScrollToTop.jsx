@@ -2,16 +2,24 @@ import { useEffect, useLayoutEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 
 export default function ScrollToTop() {
-  const { pathname } = useLocation();
+  const { pathname, hash } = useLocation();
 
   useLayoutEffect(() => {
-    window.scrollTo(0, 0);
-  }, [pathname]);
+    if (!hash) {
+      window.scrollTo(0, 0);
+    }
+  }, [pathname, hash]);
 
   useEffect(() => {
-    const raf = requestAnimationFrame(() => window.scrollTo(0, 0));
+    const raf = requestAnimationFrame(() => {
+      if (hash) {
+        document.getElementById(hash.slice(1))?.scrollIntoView();
+      } else {
+        window.scrollTo(0, 0);
+      }
+    });
     return () => cancelAnimationFrame(raf);
-  }, [pathname]);
+  }, [pathname, hash]);
 
   return null;
 }

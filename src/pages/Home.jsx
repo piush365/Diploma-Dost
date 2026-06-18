@@ -1,4 +1,5 @@
 import { lazy, Suspense } from "react";
+import SearchBar from "../components/SearchBar";
 import { Link } from "react-router-dom";
 import {
   ArrowRight,
@@ -273,6 +274,16 @@ export default function Home() {
             >
               College Predictor
             </Link>
+          </div>
+          {/* Search Section */}
+          <div
+            style={{
+              marginTop: "1rem",
+              width: "100%",
+              maxWidth: "700px",
+            }}
+          >
+            <SearchBar />
           </div>
         </div>
         {/* end LEFT */}

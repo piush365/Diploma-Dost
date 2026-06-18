@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { Menu, X, Moon, Sun } from 'lucide-react'
+import SearchBar from '../SearchBar'
+
 const navLinks = [
   { label: 'Resources', path: '/resources' },
   { label: 'Roadmaps', path: '/roadmaps' },
@@ -44,7 +46,7 @@ export default function Navbar() {
         <Link
           to="/"
           onClick={() => setOpen(false)}
-          className="flex items-center gap-3"
+          className="-ml-2 flex items-center gap-3"
           style={{ textDecoration: 'none' }}
         >
           <img
@@ -103,7 +105,7 @@ export default function Navbar() {
 
         {/* ── Desktop right: CTA ── */}
         <div className="hidden md:flex items-center gap-3">
-          <Link
+          {/* <Link
             to="/predictor"
             className="btn-primary text-sm px-4 py-2 outline-none"
             onFocus={e => {
@@ -114,7 +116,9 @@ export default function Navbar() {
             }}
           >
             College Predictor
-          </Link>
+          </Link> */}
+
+          <SearchBar />
 
           <button
             onClick={toggleTheme}
@@ -126,7 +130,9 @@ export default function Navbar() {
         </div>
 
         {/* ── Mobile right: hamburger ── */}
-        <div className="md:hidden flex items-center">
+        <div className="md:hidden flex items-center gap-1">
+          <SearchBar mobile onNavigate={() => setOpen(false)} />
+
           <button
             className="p-2 rounded-lg text-[var(--text-muted)] hover:text-[var(--text)] transition-colors duration-200 outline-none"
             onClick={() => setOpen(!open)}
