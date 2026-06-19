@@ -60,7 +60,7 @@ useEffect(() => {
 
         {loading ? (
           <div className="flex items-center justify-center py-20">
-            <div className="w-8 h-8 border-3 border-[var(--accent)] border-t-transparent rounded-full animate-spin" />
+            <div className="w-8 h-8 border-[3px] border-[var(--accent)] border-t-transparent rounded-full animate-spin" />
           </div>
         ) : groupedResults.length > 0 ? (
           <div className="grid gap-8">
