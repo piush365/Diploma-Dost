@@ -327,28 +327,29 @@ async function getSupabaseSearchResults(query) {
 
   // Search playlists table
   try {
-    const { data: playlists } = await supabase
+    const { data: playlists, error: playlistsError } = await supabase
       .from('playlists')
-      .select('*')
+      .select('id, subject, channel_name, branch, semester')
       .or(`subject.ilike.${searchTerm},channel_name.ilike.${searchTerm},branch.ilike.${searchTerm}`)
       .limit(10)
 
-    if (playlists) {
-      playlists.forEach((pl, index) => {
-        results.push(item({
-          id: `playlist-${pl.id}`,
-          title: pl.subject,
-          description: `${pl.channel_name} · ${pl.branch} · Sem ${pl.semester}`,
-          category: 'YouTube',
-          keywords: [pl.subject, pl.channel_name, pl.branch, pl.semester],
-          route: '/youtube',
-          sourceSection: 'YouTube'
-        }))
+    if (playlistsError) {
+      console.error('Error searching playlists:', playlistsError)
+    } else if (playlists) {
+      playlists.forEach(pl => {
+        results.push(
+          item({
+            id: `playlist-${pl.id}`,
+            title: pl.subject,
+            description: `${pl.channel_name} · ${pl.branch} · Sem ${pl.semester}`,
+            category: 'YouTube',
+            keywords: [pl.subject, pl.channel_name, pl.branch, pl.semester],
+            route: '/youtube',
+            sourceSection: 'YouTube',
+          })
+        )
       })
     }
-  } catch (e) {
-    console.error('Error searching playlists:', e)
-  }
 
   // Search cutoffs table
   try {
