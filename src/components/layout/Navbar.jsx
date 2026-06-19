@@ -4,9 +4,10 @@ import { Menu, X, Moon, Sun } from 'lucide-react'
 import SearchBar from '../SearchBar'
 
 const navLinks = [
-  { label: 'Resources', path: '/resources' },
-  { label: 'Roadmaps', path: '/roadmaps' },
-  { label: 'Predictor', path: '/predictor' },
+  { label: 'Resources',   path: '/resources' },
+  { label: 'Roadmaps',    path: '/roadmaps' },
+  { label: 'CAP Updates', path: '/admission-progress' },
+  { label: 'Predictor',   path: '/predictor' },
   { label: 'Innovations', path: '/innovation-hub' },
   { label: 'DSA & CP', path: '/dsa' },
   { label: 'YouTube', path: '/youtube' },
@@ -50,7 +51,7 @@ export default function Navbar() {
           style={{ textDecoration: 'none' }}
         >
           <img
-            src={"https://aujimkqsmxjaeusspxtp.supabase.co/storage/v1/object/public/model/dd-logo.png"}
+            src={`${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/model/dd-logo.png`}
             alt="Diploma Dost"
             style={{
               width: '52px',
@@ -87,18 +88,19 @@ export default function Navbar() {
             const isActive = pathname === link.path
             return (
               <Link
-                key={link.path}
-                to={link.path}
-                className={`font-ui text-sm px-2 py-2 rounded-lg transition-colors duration-200 outline-none ${isActive ? 'text-[var(--accent)] bg-[var(--accent)]/10' : 'text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--surface2)]'}`}
-                onFocus={e => {
-                  e.currentTarget.style.boxShadow = '0 0 0 2px var(--accent)'
-                }}
-                onBlur={e => {
-                  e.currentTarget.style.boxShadow = 'none'
-                }}
-              >
-                {link.label}
-              </Link>
+          key={link.path}
+          to={link.path}
+          aria-current={isActive ? 'page' : undefined}
+          className={`font-ui text-sm px-2 py-2 rounded-lg transition-colors duration-200 outline-none ${isActive ? 'text-[#e8453c] bg-[#e8453c]/10' : 'text-[#888] hover:text-[#f0ede6] hover:bg-[#1a1a1a]'}`}
+          onFocus={e => {
+            e.currentTarget.style.boxShadow = '0 0 0 2px var(--accent)'
+          }}
+          onBlur={e => {
+            e.currentTarget.style.boxShadow = 'none'
+          }}
+        >
+          {link.label}
+        </Link>
             )
           })}
         </div>
@@ -137,6 +139,7 @@ export default function Navbar() {
             className="p-2 rounded-lg text-[var(--text-muted)] hover:text-[var(--text)] transition-colors duration-200 outline-none"
             onClick={() => setOpen(!open)}
             aria-label={open ? 'Close menu' : 'Open menu'}
+            aria-expanded={open}
             onFocus={e => {
               e.currentTarget.style.boxShadow = '0 0 0 2px var(--accent)'
               e.currentTarget.style.color = 'var(--text)'
@@ -152,34 +155,33 @@ export default function Navbar() {
       </div>
 
       {/* ── Mobile menu ── */}
-      {
-        open && (
-          <div
-            className="md:hidden px-4 pb-4 flex flex-col gap-1"
-            style={{ borderTop: '1px solid var(--border)' }}
-          >
-            {navLinks.map(link => {
-              const isActive = pathname === link.path
-              return (
-                <Link
-                  key={link.path}
-                  to={link.path}
-                  onClick={() => setOpen(false)}
-                  className={`font-ui text-base px-4 py-3 rounded-lg transition-colors duration-200 outline-none ${isActive ? 'text-[var(--accent)] bg-[var(--accent)]/10' : 'text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--surface2)]'}`}
-                  onFocus={e => {
-                    e.currentTarget.style.boxShadow = '0 0 0 2px var(--accent)'
-                  }}
-                  onBlur={e => {
-                    e.currentTarget.style.boxShadow = 'none'
-                  }}
-                >
-                  {link.label}
-                </Link>
-              )
-            })}
-          </div>
-        )
-      }
-    </nav >
+      {open && (
+        <div
+          className="md:hidden px-4 pb-4 flex flex-col gap-1"
+          style={{ borderTop: '1px solid var(--border)' }}
+        >
+          {navLinks.map(link => {
+            const isActive = pathname === link.path
+            return (
+              <Link
+                key={link.path}
+                to={link.path}
+                onClick={() => setOpen(false)}
+                aria-current={isActive ? 'page' : undefined}
+                className={`font-ui text-base px-4 py-3 rounded-lg transition-colors duration-200 outline-none ${isActive ? 'text-[#e8453c] bg-[#e8453c]/10' : 'text-[#888] hover:text-[#f0ede6] hover:bg-[#1a1a1a]'}`}
+                onFocus={e => {
+                  e.currentTarget.style.boxShadow = '0 0 0 2px var(--accent)'
+                }}
+                onBlur={e => {
+                  e.currentTarget.style.boxShadow = 'none'
+                }}
+              >
+                {link.label}
+              </Link>
+            )
+          })}
+        </div>
+      )}
+    </nav>
   )
 }

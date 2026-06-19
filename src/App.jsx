@@ -11,6 +11,7 @@ const Home         = lazy(() => import('./pages/Home'))
 const Resources    = lazy(() => import('./pages/Resources'))
 const Roadmaps     = lazy(() => import('./pages/Roadmaps'))
 const Predictor    = lazy(() => import('./pages/Predictor'))
+const AdmissionProgress = lazy(() => import('./pages/AdmissionProgress'))
 const InnovationHub = lazy(() => import('./pages/InnovationHub'))
 const DSA          = lazy(() => import('./pages/DSA'))
 const YouTube      = lazy(() => import('./pages/YouTube'))
@@ -42,6 +43,7 @@ export default function App() {
                 <Route path="/resources"     element={<Resources />} />
                 <Route path="/roadmaps"      element={<Roadmaps />} />
                 <Route path="/predictor"     element={<Predictor />} />
+                <Route path="/admission-progress" element={<AdmissionProgress />} />
                 <Route path="/innovation-hub" element={<InnovationHub />} />
                 <Route path="/dsa"           element={<DSA />} />
                 <Route path="/youtube"       element={<YouTube />} />

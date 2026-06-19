@@ -200,7 +200,6 @@ export default function YouTube() {
           <div className="yt-state yt-state--error">
             <p className="yt-state__title">Oops! Something went wrong</p>
             <p className="yt-state__sub">Could not load playlists. Check your connection and try again.</p>
-            <code className="yt-state__code">{error}</code>
           </div>
         )}
 

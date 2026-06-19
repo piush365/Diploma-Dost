@@ -83,7 +83,7 @@ export default function HeroScene() {
     // ── LOAD EAGLE ─────────────────────────────────────────
     // Eagle has baked PBR textures — preserve them, don't override
     let eagleRef = null
-    loader.load('https://aujimkqsmxjaeusspxtp.supabase.co/storage/v1/object/public/model/mechanical_eagle.glb', (gltf) => {
+    loader.load(`${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/model/mechanical_eagle.glb`, (gltf) => {
       const eagle = gltf.scene
 
       eagle.traverse(child => {
@@ -123,7 +123,7 @@ export default function HeroScene() {
 
     // ── LOAD CAP ───────────────────────────────────────────
     // Hat has no textures — flat material colors only
-    loader.load('https://aujimkqsmxjaeusspxtp.supabase.co/storage/v1/object/public/model/graduation_hat.glb', (gltf) => {
+    loader.load(`${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/model/graduation_hat.glb`, (gltf) => {
       const cap = gltf.scene
 
       cap.traverse(child => {

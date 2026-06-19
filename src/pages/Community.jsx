@@ -28,6 +28,7 @@ export default function Community() {
 
   const [answerForm, setAnswerForm] = useState({ name: '', answer_text: '' })
   const [answerSubmitting, setAnswerSubmitting] = useState(false)
+  const [answerError, setAnswerError] = useState(null)
 
   useEffect(() => {
     fetchQuestions()
@@ -52,16 +53,23 @@ export default function Community() {
   async function fetchAnswers(questionId) {
     if (answers[questionId]) return
     setAnswersLoading(prev => ({ ...prev, [questionId]: true }))
-    const { data, error } = await supabase
-      .from('answers')
-      .select('*')
-      .eq('question_id', questionId)
-      .order('created_at', { ascending: true })
+    try {
+      const { data, error } = await supabase
+        .from('answers')
+        .select('*')
+        .eq('question_id', questionId)
+        .order('created_at', { ascending: true })
 
-    if (!error) {
-      setAnswers(prev => ({ ...prev, [questionId]: data || [] }))
+      if (error) {
+        setAnswers(prev => ({ ...prev, [questionId]: [] }))
+      } else {
+        setAnswers(prev => ({ ...prev, [questionId]: data || [] }))
+      }
+    } catch {
+      setAnswers(prev => ({ ...prev, [questionId]: [] }))
+    } finally {
+      setAnswersLoading(prev => ({ ...prev, [questionId]: false }))
     }
-    setAnswersLoading(prev => ({ ...prev, [questionId]: false }))
   }
 
   function toggleExpand(questionId) {
@@ -79,24 +87,29 @@ export default function Community() {
     if (!form.name.trim() || !form.question_text.trim()) return
 
     setSubmitting(true)
-    const { data, error } = await supabase
-      .from('questions')
-      .insert([{
-        name: form.name.trim(),
-        branch: form.branch,
-        semester: form.semester,
-        question_text: form.question_text.trim(),
-      }])
-      .select()
+    try {
+      const { data, error } = await supabase
+        .from('questions')
+        .insert([{
+          name: form.name.trim(),
+          branch: form.branch,
+          semester: form.semester,
+          question_text: form.question_text.trim(),
+        }])
+        .select()
 
-    if (!error && data) {
-      setQuestions(prev => [data[0], ...prev])
-      setForm({ name: '', branch: 'CS', semester: 1, question_text: '' })
-      setShowForm(false)
-    } else if (error) {
-      setError(error.message)
+      if (!error && data) {
+        setQuestions(prev => [data[0], ...prev])
+        setForm({ name: '', branch: 'CS', semester: 1, question_text: '' })
+        setShowForm(false)
+      } else if (error) {
+        setError('Failed to post your question. Please try again.')
+      }
+    } catch {
+      setError('Failed to post your question. Please try again.')
+    } finally {
+      setSubmitting(false)
     }
-    setSubmitting(false)
   }
 
   async function handleSubmitAnswer(e, questionId) {
@@ -104,23 +117,31 @@ export default function Community() {
     if (!answerForm.name.trim() || !answerForm.answer_text.trim()) return
 
     setAnswerSubmitting(true)
-    const { data, error } = await supabase
-      .from('answers')
-      .insert([{
-        question_id: questionId,
-        name: answerForm.name.trim(),
-        answer_text: answerForm.answer_text.trim(),
-      }])
-      .select()
+    setAnswerError(null)
+    try {
+      const { data, error } = await supabase
+        .from('answers')
+        .insert([{
+          question_id: questionId,
+          name: answerForm.name.trim(),
+          answer_text: answerForm.answer_text.trim(),
+        }])
+        .select()
 
-    if (!error && data) {
-      setAnswers(prev => ({
-        ...prev,
-        [questionId]: [...(prev[questionId] || []), data[0]],
-      }))
-      setAnswerForm({ name: '', answer_text: '' })
+      if (!error && data) {
+        setAnswers(prev => ({
+          ...prev,
+          [questionId]: [...(prev[questionId] || []), data[0]],
+        }))
+        setAnswerForm({ name: '', answer_text: '' })
+      } else if (error) {
+        setAnswerError('Failed to post your answer. Please try again.')
+      }
+    } catch {
+      setAnswerError('Failed to post your answer. Please try again.')
+    } finally {
+      setAnswerSubmitting(false)
     }
-    setAnswerSubmitting(false)
   }
 
   function timeAgo(dateStr) {
@@ -558,6 +579,15 @@ export default function Community() {
                           style={{ ...inputStyle, flex: '1 1 200px' }}
                         />
                       </div>
+                      {answerError && (
+                        <p style={{
+                          fontFamily: 'var(--font-body)',
+                          fontSize: '0.8rem',
+                          color: 'var(--accent)',
+                        }}>
+                          {answerError}
+                        </p>
+                      )}
                       <button
                         type="submit"
                         disabled={answerSubmitting}

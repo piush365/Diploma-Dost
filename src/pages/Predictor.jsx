@@ -323,21 +323,23 @@ function CollegeSearch({ value, onChange, onSelect }) {
     clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(async () => {
       setLoading(true);
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("cutoffs")
         .select("college_code, college_name, district")
         .ilike("college_name", `%${value}%`)
         .eq("year", 2025)
         .order("college_name")
         .limit(8);
-      // deduplicate by college_code
-      const seen = new Set();
-      const unique = (data || []).filter((r) => {
-        if (seen.has(r.college_code)) return false;
-        seen.add(r.college_code); return true;
-      });
-      setSuggestions(unique);
-      setOpen(unique.length > 0);
+      if (!error) {
+        // deduplicate by college_code
+        const seen = new Set();
+        const unique = (data || []).filter((r) => {
+          if (seen.has(r.college_code)) return false;
+          seen.add(r.college_code); return true;
+        });
+        setSuggestions(unique);
+        setOpen(unique.length > 0);
+      }
       setLoading(false);
     }, 300);
   }, [value]);
@@ -466,14 +468,14 @@ function CollegeAllBranches({ college, category, onClose }) {
   useEffect(() => {
     async function load() {
       setLoading(true);
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("cutoffs")
         .select("course_name, category, cap_round, cutoff_open, cutoff_percent")
         .eq("college_code", college.college_code)
         .eq("year", 2025)
         .eq("category", category)
         .order("cutoff_percent", { ascending: false });
-      setRows(data || []);
+      if (!error) setRows(data || []);
       setLoading(false);
     }
     load();

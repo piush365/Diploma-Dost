@@ -2,7 +2,6 @@ import { ChevronRight } from 'lucide-react';
 import { FaGithub } from 'react-icons/fa';
 import { FaInstagram } from 'react-icons/fa';
 import { FaLinkedin } from 'react-icons/fa';
-import { FaYoutube } from 'react-icons/fa';
 
 
 import { Link } from 'react-router-dom';
@@ -39,6 +38,7 @@ export default function Footer() {
               {[
                 { label: 'Resources', path: '/resources' },
                 { label: 'Roadmaps', path: '/roadmaps' },
+                { label: 'CAP Updates', path: '/admission-progress' },
                 { label: 'Predictor', path: '/predictor' },
                 { label: 'DSA & CP', path: '/dsa' },
                 { label: 'Internships', path: '/internships' },
@@ -113,6 +113,7 @@ export default function Footer() {
                   href="https://github.com/piush365/diploma-dost"
                   target="_blank"
                   rel="noopener noreferrer"
+                  aria-label="GitHub repository"
                   className="p-2 rounded-lg bg-[var(--surface)] border border-[var(--border)] text-[var(--text-muted)] hover:text-[var(--accent)] hover:border-[var(--accent)] hover:bg-[var(--accent)]/5 transition-all"
                 >
                   <FaGithub size={20} />
@@ -121,6 +122,7 @@ export default function Footer() {
                   href="https://www.linkedin.com/in/piush-gogi-90a44737b/"
                   target="_blank"
                   rel="noopener noreferrer"
+                  aria-label="LinkedIn profile"
                   className="p-2 rounded-lg bg-[var(--surface)] border border-[var(--border)] text-[var(--text-muted)] hover:text-[var(--accent)] hover:border-[var(--accent)] hover:bg-[var(--accent)]/5 transition-all"
                 >
                   <FaLinkedin size={20} />
@@ -129,6 +131,7 @@ export default function Footer() {
                   href="https://www.instagram.com/piush_without_a_y/"
                   target="_blank"
                   rel="noopener noreferrer"
+                  aria-label="Instagram profile"
                   className="p-2 rounded-lg bg-[var(--surface)] border border-[var(--border)] text-[var(--text-muted)] hover:text-[var(--accent)] hover:border-[var(--accent)] hover:bg-[var(--accent)]/5 transition-all"
                 >
                   <FaInstagram size={20} />
