@@ -1,7 +1,7 @@
-import { useRef, useState } from 'react'
+import { useRef, useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Search, X } from 'lucide-react'
-import { getSearchResults, groupSearchResults } from '../data/search'
+import { getHybridSearchResults, groupSearchResults } from '../data/search'
 
 const placeholder = 'Search resources, roadmaps, PYQs...'
 
@@ -9,9 +9,27 @@ export default function SearchBar({ mobile = false, onNavigate }) {
   const [query, setQuery] = useState('')
   const [expanded, setExpanded] = useState(false)
   const [resultsOpen, setResultsOpen] = useState(false)
+  const [results, setResults] = useState([])
+  const [loading, setLoading] = useState(false)
   const inputRef = useRef(null)
   const navigate = useNavigate()
-  const results = getSearchResults(query, 12)
+
+  // Debounced search
+  useEffect(() => {
+    const handler = setTimeout(async () => {
+      if (query.trim().length > 0) {
+        setLoading(true)
+        const searchResults = await getHybridSearchResults(query, 12)
+        setResults(searchResults)
+        setLoading(false)
+      } else {
+        setResults([])
+      }
+    }, 300)
+
+    return () => clearTimeout(handler)
+  }, [query])
+
   const groupedResults = groupSearchResults(results)
   const showResults = resultsOpen && query.trim().length > 0 && (!mobile || expanded)
 
@@ -22,6 +40,7 @@ export default function SearchBar({ mobile = false, onNavigate }) {
 
   const handleClear = () => {
     setQuery('')
+    setResults([])
     setResultsOpen(false)
     inputRef.current?.focus()
   }
@@ -29,6 +48,7 @@ export default function SearchBar({ mobile = false, onNavigate }) {
   const handleResultClick = route => {
     navigate(route)
     setQuery('')
+    setResults([])
     setResultsOpen(false)
     setExpanded(false)
     onNavigate?.()
@@ -99,7 +119,10 @@ export default function SearchBar({ mobile = false, onNavigate }) {
               placeholder={placeholder}
               className="w-full min-w-0 bg-transparent font-ui text-sm text-[var(--text)] placeholder:text-[var(--text-muted)] outline-none"
             />
-            {query && (
+            {loading && (
+              <div className="w-4 h-4 border-2 border-[var(--accent)] border-t-transparent rounded-full animate-spin" />
+            )}
+            {query && !loading && (
               <button
                 type="button"
                 aria-label="Clear search"
@@ -113,7 +136,12 @@ export default function SearchBar({ mobile = false, onNavigate }) {
 
           {showResults && (
             <div className="absolute left-0 top-12 z-50 max-h-[70vh] w-full overflow-y-auto rounded-lg border border-[var(--border)] bg-[var(--surface)] shadow-2xl">
-              {groupedResults.length > 0 ? (
+              {loading ? (
+                <div className="px-3 py-3 font-body text-sm text-[var(--text-muted)] flex items-center gap-2">
+                  <div className="w-4 h-4 border-2 border-[var(--accent)] border-t-transparent rounded-full animate-spin" />
+                  Searching...
+                </div>
+              ) : groupedResults.length > 0 ? (
                 groupedResults.map(section => (
                   <div key={section.group} className="border-b border-[var(--border)] last:border-b-0">
                     <div className="px-3 pt-3 pb-1 font-mono text-[0.62rem] uppercase tracking-[0.12em] text-[var(--accent)]">

@@ -1,4 +1,5 @@
 import { ROADMAPS } from './roadmaps'
+import { supabase } from '../lib/supabase'
 
 const groupOrder = [
   'Resources',
@@ -279,12 +280,136 @@ function scoreItem(item, query) {
   return score
 }
 
-export function getSearchResults(query, limit = 18) {
+// Get JS search results (existing functionality)
+export function getJsSearchResults(query, limit = 18) {
   return searchIndex
     .map(searchItem => ({ ...searchItem, score: scoreItem(searchItem, query) }))
     .filter(searchItem => searchItem.score > 0)
     .sort((a, b) => b.score - a.score || a.title.localeCompare(b.title))
     .slice(0, limit)
+}
+
+// Get Supabase search results
+async function getSupabaseSearchResults(query) {
+  const results = []
+  const searchTerm = `%${query}%`
+
+  // Search resources table
+  try {
+    const { data: resources } = await supabase
+      .from('resources')
+      .select('*')
+      .or(`subject_name.ilike.${searchTerm},course_code.ilike.${searchTerm},type.ilike.${searchTerm},session.ilike.${searchTerm},branch.ilike.${searchTerm}`)
+      .limit(10)
+
+    if (resources) {
+      resources.forEach((res, index) => {
+        results.push(item({
+          id: `resource-${res.id}`,
+          title: res.subject_name,
+          description: `${res.course_code} · ${res.type} · Sem ${res.semester} · ${res.branch} · ${res.session}`,
+          category: res.type,
+          keywords: [res.subject_name, res.course_code, res.type, res.session, res.branch, res.semester],
+          route: '/resources',
+          sourceSection: 'Resources'
+        }))
+      })
+    }
+  } catch (e) {
+    console.error('Error searching resources:', e)
+  }
+
+  // Search playlists table
+  try {
+    const { data: playlists } = await supabase
+      .from('playlists')
+      .select('*')
+      .or(`subject.ilike.${searchTerm},channel_name.ilike.${searchTerm},branch.ilike.${searchTerm}`)
+      .limit(10)
+
+    if (playlists) {
+      playlists.forEach((pl, index) => {
+        results.push(item({
+          id: `playlist-${pl.id}`,
+          title: pl.subject,
+          description: `${pl.channel_name} · ${pl.branch} · Sem ${pl.semester}`,
+          category: 'YouTube',
+          keywords: [pl.subject, pl.channel_name, pl.branch, pl.semester],
+          route: '/youtube',
+          sourceSection: 'YouTube'
+        }))
+      })
+    }
+  } catch (e) {
+    console.error('Error searching playlists:', e)
+  }
+
+  // Search cutoffs table
+  try {
+    const { data: cutoffs } = await supabase
+      .from('cutoffs')
+      .select('*')
+      .or(`college_name.ilike.${searchTerm},course_name.ilike.${searchTerm},district.ilike.${searchTerm}`)
+      .limit(10)
+
+    if (cutoffs) {
+      const seen = new Set()
+      cutoffs.forEach((co, index) => {
+        const key = `${co.college_code}-${co.course_name}`
+        if (!seen.has(key)) {
+          seen.add(key)
+          results.push(item({
+            id: `cutoff-${co.college_code}-${co.course_name}`,
+            title: co.college_name,
+            description: `${co.course_name} · ${co.district} · Cutoff: ${co.cutoff_percent?.toFixed(2)}%`,
+            category: 'College',
+            keywords: [co.college_name, co.course_name, co.district, co.college_code],
+            route: '/predictor',
+            sourceSection: 'Resources'
+          }))
+        }
+      })
+    }
+  } catch (e) {
+    console.error('Error searching cutoffs:', e)
+  }
+
+  return results
+}
+
+// Hybrid search: get both JS and Supabase results, merge, deduplicate, sort
+export async function getHybridSearchResults(query, limit = 18) {
+  if (!query.trim()) return []
+
+  const [jsResults, supabaseResults] = await Promise.all([
+    getJsSearchResults(query, limit),
+    getSupabaseSearchResults(query)
+  ])
+
+  // Deduplicate by id
+  const seen = new Set()
+  const merged = []
+
+  // Add Supabase results first (they're fresh from DB)
+  for (const item of supabaseResults) {
+    if (!seen.has(item.id)) {
+      seen.add(item.id)
+      merged.push({ ...item, score: 50 }) // Give Supabase results a base score
+    }
+  }
+
+  // Add JS results
+  for (const item of jsResults) {
+    if (!seen.has(item.id)) {
+      seen.add(item.id)
+      merged.push(item)
+    }
+  }
+
+  // Sort by score descending, then title ascending
+  merged.sort((a, b) => b.score - a.score || a.title.localeCompare(b.title))
+
+  return merged.slice(0, limit)
 }
 
 export function groupSearchResults(results) {

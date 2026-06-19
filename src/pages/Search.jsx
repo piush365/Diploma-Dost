@@ -1,11 +1,24 @@
+import { useState, useEffect } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { Search as SearchIcon } from 'lucide-react'
-import { getSearchResults, groupSearchResults } from '../data/search'
+import { getHybridSearchResults, groupSearchResults } from '../data/search'
 
 export default function Search() {
   const [searchParams] = useSearchParams()
   const query = searchParams.get('q') || ''
-  const results = getSearchResults(query, 60)
+  const [results, setResults] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    async function loadResults() {
+      setLoading(true)
+      const searchResults = await getHybridSearchResults(query, 60)
+      setResults(searchResults)
+      setLoading(false)
+    }
+    loadResults()
+  }, [query])
+
   const groupedResults = groupSearchResults(results)
 
   return (
@@ -23,7 +36,11 @@ export default function Search() {
           </div>
         </div>
 
-        {groupedResults.length > 0 ? (
+        {loading ? (
+          <div className="flex items-center justify-center py-20">
+            <div className="w-8 h-8 border-3 border-[var(--accent)] border-t-transparent rounded-full animate-spin" />
+          </div>
+        ) : groupedResults.length > 0 ? (
           <div className="grid gap-8">
             {groupedResults.map(section => (
               <div key={section.group}>
