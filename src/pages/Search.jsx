@@ -9,15 +9,37 @@ export default function Search() {
   const [results, setResults] = useState([])
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    async function loadResults() {
-      setLoading(true)
-      const searchResults = await getHybridSearchResults(query, 60)
-      setResults(searchResults)
+useEffect(() => {
+  let cancelled = false
+
+  async function loadResults() {
+    const term = query.trim()
+
+    if (!term) {
+      setResults([])
       setLoading(false)
+      return
     }
-    loadResults()
-  }, [query])
+
+    setLoading(true)
+    try {
+      const searchResults = await getHybridSearchResults(term, 60)
+      if (!cancelled) {
+        setResults(searchResults)
+      }
+    } finally {
+      if (!cancelled) {
+        setLoading(false)
+      }
+    }
+  }
+
+  loadResults()
+
+  return () => {
+    cancelled = true
+  }
+}, [query])
 
   const groupedResults = groupSearchResults(results)
 
