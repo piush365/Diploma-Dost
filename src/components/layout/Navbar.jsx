@@ -19,16 +19,16 @@ export default function Navbar() {
   const [open, setOpen] = useState(false)
   const { pathname } = useLocation()
 
-  const [darkMode, setDarkMode] = useState(true)
+  const [darkMode, setDarkMode] = useState(
+    () => !document.documentElement.classList.contains('light-theme')
+  )
 
   const toggleTheme = () => {
-    setDarkMode(!darkMode)
-
-    if (darkMode) {
-      document.documentElement.classList.add('light-theme')
-    } else {
-      document.documentElement.classList.remove('light-theme')
-    }
+    setDarkMode(prev => {
+      const next = !prev
+      document.documentElement.classList.toggle('light-theme', !next)
+      return next
+    })
   }
   return (
     <nav
