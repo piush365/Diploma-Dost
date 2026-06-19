@@ -296,23 +296,29 @@ async function getSupabaseSearchResults(query) {
 
   // Search resources table
   try {
-    const { data: resources } = await supabase
+    const { data: resources, error: resourcesError } = await supabase
       .from('resources')
-      .select('*')
-      .or(`subject_name.ilike.${searchTerm},course_code.ilike.${searchTerm},type.ilike.${searchTerm},session.ilike.${searchTerm},branch.ilike.${searchTerm}`)
+      .select('id, subject_name, course_code, type, semester, branch, session')
+      .or(
+        `subject_name.ilike.${searchTerm},course_code.ilike.${searchTerm},type.ilike.${searchTerm},session.ilike.${searchTerm},branch.ilike.${searchTerm}`
+      )
       .limit(10)
 
-    if (resources) {
-      resources.forEach((res, index) => {
-        results.push(item({
-          id: `resource-${res.id}`,
-          title: res.subject_name,
-          description: `${res.course_code} · ${res.type} · Sem ${res.semester} · ${res.branch} · ${res.session}`,
-          category: res.type,
-          keywords: [res.subject_name, res.course_code, res.type, res.session, res.branch, res.semester],
-          route: '/resources',
-          sourceSection: 'Resources'
-        }))
+    if (resourcesError) {
+      console.error('Error searching resources:', resourcesError)
+    } else if (resources) {
+      resources.forEach(res => {
+        results.push(
+          item({
+            id: `resource-${res.id}`,
+            title: res.subject_name,
+            description: `${res.course_code} · ${res.type} · Sem ${res.semester} · ${res.branch} · ${res.session}`,
+            category: res.type,
+            keywords: [res.subject_name, res.course_code, res.type, res.session, res.branch, res.semester],
+            route: '/resources',
+            sourceSection: 'Resources',
+          })
+        )
       })
     }
   } catch (e) {
