@@ -15,20 +15,36 @@ export default function SearchBar({ mobile = false, onNavigate }) {
   const navigate = useNavigate()
 
   // Debounced search
-  useEffect(() => {
-    const handler = setTimeout(async () => {
-      if (query.trim().length > 0) {
-        setLoading(true)
-        const searchResults = await getHybridSearchResults(query, 12)
-        setResults(searchResults)
-        setLoading(false)
-      } else {
-        setResults([])
-      }
-    }, 300)
+useEffect(() => {
+  let cancelled = false
 
-    return () => clearTimeout(handler)
-  }, [query])
+  const timeoutId = window.setTimeout(async () => {
+    const term = query.trim()
+
+    if (!term) {
+      setLoading(false)
+      setResults([])
+      return
+    }
+
+    setLoading(true)
+    try {
+      const searchResults = await getHybridSearchResults(term, 12)
+      if (!cancelled) {
+        setResults(searchResults)
+      }
+    } finally {
+      if (!cancelled) {
+        setLoading(false)
+      }
+    }
+  }, 300)
+
+  return () => {
+    cancelled = true
+    window.clearTimeout(timeoutId)
+  }
+}, [query])
 
   const groupedResults = groupSearchResults(results)
   const showResults = resultsOpen && query.trim().length > 0 && (!mobile || expanded)
