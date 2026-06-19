@@ -353,31 +353,34 @@ async function getSupabaseSearchResults(query) {
 
   // Search cutoffs table
   try {
-    const { data: cutoffs } = await supabase
+    const { data: cutoffs, error: cutoffsError } = await supabase
       .from('cutoffs')
-      .select('*')
+      .select('college_code, college_name, course_name, district, cutoff_percent')
       .or(`college_name.ilike.${searchTerm},course_name.ilike.${searchTerm},district.ilike.${searchTerm}`)
       .limit(10)
 
-    if (cutoffs) {
+    if (cutoffsError) {
+      console.error('Error searching cutoffs:', cutoffsError)
+    } else if (cutoffs) {
       const seen = new Set()
-      cutoffs.forEach((co, index) => {
+      cutoffs.forEach(co => {
         const key = `${co.college_code}-${co.course_name}`
         if (!seen.has(key)) {
           seen.add(key)
-          results.push(item({
-            id: `cutoff-${co.college_code}-${co.course_name}`,
-            title: co.college_name,
-            description: `${co.course_name} · ${co.district} · Cutoff: ${co.cutoff_percent?.toFixed(2)}%`,
-            category: 'College',
-            keywords: [co.college_name, co.course_name, co.district, co.college_code],
-            route: '/predictor',
-            sourceSection: 'Resources'
-          }))
+          results.push(
+            item({
+              id: `cutoff-${co.college_code}-${co.course_name}`,
+              title: co.college_name,
+              description: `${co.course_name} · ${co.district} · Cutoff: ${co.cutoff_percent?.toFixed(2)}%`,
+              category: 'College',
+              keywords: [co.college_name, co.course_name, co.district, co.college_code],
+              route: '/predictor',
+              sourceSection: 'Resources',
+            })
+          )
         }
       })
     }
-  } catch (e) {
     console.error('Error searching cutoffs:', e)
   }
 
