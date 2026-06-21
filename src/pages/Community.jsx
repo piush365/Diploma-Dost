@@ -36,6 +36,28 @@ export default function Community() {
     fetchQuestions()
   }, [sortBy])
 
+  function sortQuestions(questionsArray, sortType) {
+    const sorted = [...questionsArray]
+    if (sortType === 'newest') {
+      sorted.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+    } else if (sortType === 'most_upvoted') {
+      sorted.sort((a, b) => {
+        const voteDiff = (b.upvote_count || 0) - (a.upvote_count || 0)
+        if (voteDiff !== 0) return voteDiff
+        return new Date(b.created_at) - new Date(a.created_at)
+      })
+    } else if (sortType === 'unanswered') {
+      sorted.sort((a, b) => {
+        const aUnanswered = !a.answer_count || a.answer_count === 0
+        const bUnanswered = !b.answer_count || b.answer_count === 0
+        if (aUnanswered && !bUnanswered) return -1
+        if (!aUnanswered && bUnanswered) return 1
+        return new Date(b.created_at) - new Date(a.created_at)
+      })
+    }
+    return sorted
+  }
+
   async function fetchQuestions() {
     let cancelled = false
     setLoading(true)
@@ -43,7 +65,7 @@ export default function Community() {
     let query = supabase.from('questions').select('*')
     if (sortBy === 'newest') {
       query = query.order('created_at', { ascending: false })
-    } else {
+    } else if (sortBy === 'most_upvoted') {
       query = query.order('upvote_count', { ascending: false }).order('created_at', { ascending: false })
     }
     const { data, error } = await query
@@ -52,7 +74,7 @@ export default function Community() {
       if (error) {
         setError(error.message)
       } else {
-        setQuestions(data || [])
+        setQuestions(sortQuestions(data || [], sortBy))
       }
       setLoading(false)
     }
@@ -63,11 +85,19 @@ export default function Community() {
     const question = questions.find(q => q.id === questionId)
     if (!question) return
     const newCount = (question.upvote_count || 0) + 1
-    setQuestions(prev => prev.map(q => q.id === questionId ? { ...q, upvote_count: newCount } : q))
+    // Update locally and re-sort
+    setQuestions(prev => {
+      const updated = prev.map(q => q.id === questionId ? { ...q, upvote_count: newCount } : q)
+      return sortQuestions(updated, sortBy)
+    })
     try {
       await supabase.from('questions').update({ upvote_count: newCount }).eq('id', questionId)
     } catch {
-      setQuestions(prev => prev.map(q => q.id === questionId ? { ...q, upvote_count: question.upvote_count || 0 } : q))
+      // Revert if Supabase update fails
+      setQuestions(prev => {
+        const reverted = prev.map(q => q.id === questionId ? { ...q, upvote_count: question.upvote_count || 0 } : q)
+        return sortQuestions(reverted, sortBy)
+      })
     }
   }
 
@@ -389,6 +419,7 @@ export default function Community() {
             >
               <option value="newest">Newest</option>
               <option value="most_upvoted">Most Upvoted</option>
+              <option value="unanswered">Unanswered</option>
             </select>
           </div>
         )}
@@ -467,7 +498,7 @@ export default function Community() {
                   overflow: 'hidden',
                 }}
               >
-                <button
+                <div
                   onClick={() => toggleExpand(q.id)}
                   style={{
                     width: '100%',
@@ -564,7 +595,7 @@ export default function Community() {
                       {expanded === q.id ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
                     </span>
                   </div>
-                </button>
+                </div>
 
                 {expanded === q.id && (
                   <div style={{
