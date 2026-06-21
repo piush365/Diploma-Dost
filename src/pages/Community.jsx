@@ -54,6 +54,14 @@ export default function Community() {
   const [answerSubmitting, setAnswerSubmitting] = useState(false)
   const [answerError, setAnswerError] = useState(null)
 
+  const clearFilters = () => {
+    setSelectedBranch(null)
+    setSelectedSemester(null)
+    setSelectedTopic(null)
+    setSortBy('newest')
+    setSearchQuery('')
+  }
+
   // Save voted question IDs to localStorage
   useEffect(() => {
     localStorage.setItem('community-voted-questions', JSON.stringify(votedQuestionIds))
@@ -714,26 +722,90 @@ export default function Community() {
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            gap: '1rem',
+            gap: '1.5rem',
           }}>
-            <Users size={28} color="var(--accent)" strokeWidth={1.5} />
-            <h3 style={{
-              fontFamily: 'var(--font-ui)',
-              fontWeight: 800,
-              fontSize: '1.1rem',
-              color: 'var(--text)',
-            }}>
-              No questions yet
-            </h3>
-            <p style={{
-              fontFamily: 'var(--font-body)',
-              fontSize: '0.9rem',
-              color: 'var(--text-muted)',
-              maxWidth: '360px',
-              lineHeight: 1.7,
-            }}>
-              Be the first to ask something — your question might help someone else too.
-            </p>
+            {allQuestions.length > 0 ? (
+              <>
+                <div style={{ fontSize: '2rem' }}>🔍</div>
+                <h3 style={{
+                  fontFamily: 'var(--font-ui)',
+                  fontWeight: 800,
+                  fontSize: '1.1rem',
+                  color: 'var(--text)',
+                  margin: 0
+                }}>
+                  No questions match your filters
+                </h3>
+                <p style={{
+                  fontFamily: 'var(--font-body)',
+                  fontSize: '0.9rem',
+                  color: 'var(--text-muted)',
+                  maxWidth: '360px',
+                  lineHeight: 1.7,
+                  margin: 0
+                }}>
+                  No questions found for the selected filters.
+                </p>
+                <ul style={{
+                  fontFamily: 'var(--font-body)',
+                  fontSize: '0.85rem',
+                  color: 'var(--text-muted)',
+                  textAlign: 'left',
+                  margin: 0,
+                  paddingLeft: '1.25rem',
+                  lineHeight: 1.8
+                }}>
+                  <li>Changing filters</li>
+                  <li>Clearing filters</li>
+                  <li>Asking a new question</li>
+                </ul>
+                <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', justifyContent: 'center' }}>
+                  <button
+                    onClick={clearFilters}
+                    className="btn-ghost"
+                  >
+                    Clear Filters
+                  </button>
+                  <button
+                    onClick={() => setShowForm(true)}
+                    className="btn-primary"
+                  >
+                    <Plus size={15} />
+                    Ask a Question
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <Users size={28} color="var(--accent)" strokeWidth={1.5} />
+                <h3 style={{
+                  fontFamily: 'var(--font-ui)',
+                  fontWeight: 800,
+                  fontSize: '1.1rem',
+                  color: 'var(--text)',
+                  margin: 0
+                }}>
+                  No questions yet
+                </h3>
+                <p style={{
+                  fontFamily: 'var(--font-body)',
+                  fontSize: '0.9rem',
+                  color: 'var(--text-muted)',
+                  maxWidth: '360px',
+                  lineHeight: 1.7,
+                  margin: 0
+                }}>
+                  Be the first to ask something — your question might help someone else too.
+                </p>
+                <button
+                  onClick={() => setShowForm(true)}
+                  className="btn-primary"
+                >
+                  <Plus size={15} />
+                  Ask a Question
+                </button>
+              </>
+            )}
           </div>
         )}
 
