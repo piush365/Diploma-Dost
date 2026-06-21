@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import {
   Users, MessageCircle, Send, Loader2,
-  ChevronDown, ChevronUp, Plus, X
+  ChevronDown, ChevronUp, Plus, X, ArrowBigUp
 } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 
@@ -12,6 +12,7 @@ export default function Community() {
   const [questions, setQuestions] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [sortBy, setSortBy] = useState('newest')
 
   const [showForm, setShowForm] = useState(false)
   const [submitting, setSubmitting] = useState(false)
@@ -20,6 +21,7 @@ export default function Community() {
     branch: 'CS',
     semester: 1,
     question_text: '',
+    tags: '',
   })
 
   const [expanded, setExpanded] = useState(null)
@@ -32,16 +34,19 @@ export default function Community() {
 
   useEffect(() => {
     fetchQuestions()
-  }, [])
+  }, [sortBy])
 
   async function fetchQuestions() {
     let cancelled = false
     setLoading(true)
     setError(null)
-    const { data, error } = await supabase
-      .from('questions')
-      .select('*')
-      .order('created_at', { ascending: false })
+    let query = supabase.from('questions').select('*')
+    if (sortBy === 'newest') {
+      query = query.order('created_at', { ascending: false })
+    } else {
+      query = query.order('upvote_count', { ascending: false }).order('created_at', { ascending: false })
+    }
+    const { data, error } = await query
 
     if (!cancelled) {
       if (error) {
@@ -52,6 +57,18 @@ export default function Community() {
       setLoading(false)
     }
     return () => { cancelled = true }
+  }
+
+  async function upvoteQuestion(questionId) {
+    const question = questions.find(q => q.id === questionId)
+    if (!question) return
+    const newCount = (question.upvote_count || 0) + 1
+    setQuestions(prev => prev.map(q => q.id === questionId ? { ...q, upvote_count: newCount } : q))
+    try {
+      await supabase.from('questions').update({ upvote_count: newCount }).eq('id', questionId)
+    } catch {
+      setQuestions(prev => prev.map(q => q.id === questionId ? { ...q, upvote_count: question.upvote_count || 0 } : q))
+    }
   }
 
   async function fetchAnswers(questionId) {
@@ -91,6 +108,11 @@ export default function Community() {
     e.preventDefault()
     if (!form.name.trim() || !form.question_text.trim()) return
 
+    const tagsArray = form.tags
+      .split(',')
+      .map(t => t.trim())
+      .filter(t => t.length > 0)
+
     setSubmitting(true)
     try {
       const { data, error } = await supabase
@@ -100,12 +122,14 @@ export default function Community() {
           branch: form.branch,
           semester: form.semester,
           question_text: form.question_text.trim(),
+          tags: tagsArray,
+          upvote_count: 0,
         }])
         .select()
 
       if (!error && data) {
         setQuestions(prev => [data[0], ...prev])
-        setForm({ name: '', branch: 'CS', semester: 1, question_text: '' })
+        setForm({ name: '', branch: 'CS', semester: 1, question_text: '', tags: '' })
         setShowForm(false)
       } else if (error) {
         setError('Failed to post your question. Please try again.')
@@ -319,6 +343,17 @@ export default function Community() {
               />
             </div>
 
+            <div>
+              <label style={labelStyle}>Tags (comma-separated)</label>
+              <input
+                type="text"
+                value={form.tags}
+                onChange={e => setForm(f => ({ ...f, tags: e.target.value }))}
+                placeholder="e.g. DSA, Internship, Placements"
+                style={inputStyle}
+              />
+            </div>
+
             <button
               type="submit"
               disabled={submitting}
@@ -336,6 +371,27 @@ export default function Community() {
       <section style={{
         padding: '0 clamp(1.5rem, 6vw, 7rem) clamp(4rem, 8vw, 6rem)',
       }}>
+
+        {!loading && !error && questions.length > 0 && (
+          <div style={{
+            marginBottom: '1.5rem',
+            display: 'flex',
+            justifyContent: 'flex-end',
+          }}>
+            <select
+              value={sortBy}
+              onChange={e => setSortBy(e.target.value)}
+              style={{
+                ...inputStyle,
+                width: 'auto',
+                minWidth: '180px',
+              }}
+            >
+              <option value="newest">Newest</option>
+              <option value="most_upvoted">Most Upvoted</option>
+            </select>
+          </div>
+        )}
 
         {loading && (
           <div style={{
@@ -428,6 +484,9 @@ export default function Community() {
                   <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
                     <span style={tagStyle}>{q.branch}</span>
                     <span style={tagStyle}>Sem {q.semester}</span>
+                    {q.tags && q.tags.length > 0 && q.tags.map(tag => (
+                      <span key={tag} style={tagStyle}>{tag}</span>
+                    ))}
                     <span style={{
                       fontFamily: 'var(--font-mono)',
                       fontSize: '0.7rem',
@@ -453,14 +512,42 @@ export default function Community() {
                     alignItems: 'center',
                     justifyContent: 'space-between',
                     gap: '0.5rem',
+                    flexWrap: 'wrap',
                   }}>
-                    <span style={{
-                      fontFamily: 'var(--font-body)',
-                      fontSize: '0.8rem',
-                      color: 'var(--text-muted)',
-                    }}>
-                      Asked by {q.name}
-                    </span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                      <span style={{
+                        fontFamily: 'var(--font-body)',
+                        fontSize: '0.8rem',
+                        color: 'var(--text-muted)',
+                      }}>
+                        Asked by {q.name}
+                      </span>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); upvoteQuestion(q.id); }}
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '0.3rem',
+                          background: 'rgba(232, 69, 60, 0.1)',
+                          border: '1px solid transparent',
+                          borderRadius: '0.5rem',
+                          padding: '0.35rem 0.7rem',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s ease',
+                        }}
+                      >
+                        <ArrowBigUp size={14} color="var(--accent)" />
+                        <span style={{
+                          fontFamily: 'var(--font-mono)',
+                          fontSize: '0.7rem',
+                          color: 'var(--accent)',
+                          letterSpacing: '0.06em',
+                          textTransform: 'uppercase',
+                        }}>
+                          {q.upvote_count || 0}
+                        </span>
+                      </button>
+                    </div>
 
                     <span style={{
                       display: 'inline-flex',
