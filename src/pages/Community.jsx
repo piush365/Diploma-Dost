@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react'
 import {
   Users, MessageCircle, Send, Loader2,
-  ChevronDown, ChevronUp, Plus, X, ArrowBigUp
+  ChevronDown, ChevronUp, Plus, X, ArrowBigUp, ThumbsUp
 } from 'lucide-react'
 import { supabase, isMockMode } from '../lib/supabase'
 
 const BRANCHES = ['CS', 'IT', 'Mech', 'Civil', 'Elec', 'ETC']
 const SEMESTERS = [1, 2, 3, 4, 5, 6]
+const ALLOWED_TAGS = ['CS', 'IT', 'MECH', 'ENTC', 'SEM 1', 'SEM 2', 'SEM 3', 'SEM 4', 'SEM 5', 'SEM 6', 'DSA', 'Placements', 'Web Dev', 'Internship', 'DBMS', 'OS']
 
 export default function Community() {
   const [allQuestions, setAllQuestions] = useState([])
@@ -15,6 +16,7 @@ export default function Community() {
   const [error, setError] = useState(null)
   const [sortBy, setSortBy] = useState('newest')
   const [selectedTag, setSelectedTag] = useState(null)
+  const [searchQuery, setSearchQuery] = useState('')
 
   // Track voted question IDs locally for duplicate prevention
   const [votedQuestionIds, setVotedQuestionIds] = useState(() => {
@@ -49,7 +51,7 @@ export default function Community() {
     localStorage.setItem('community-voted-questions', JSON.stringify(votedQuestionIds))
   }, [votedQuestionIds])
 
-  // Apply filters and sorting whenever allQuestions, sortBy, or selectedTag change
+  // Apply filters and sorting whenever allQuestions, sortBy, selectedTag, or searchQuery change
   useEffect(() => {
     if (allQuestions.length > 0) {
       let filtered = [...allQuestions]
@@ -59,16 +61,34 @@ export default function Community() {
         filtered = filtered.filter(q => (q.answer_count || 0) === 0)
       }
 
+      // Apply search filter
+      if (searchQuery.trim()) {
+        const query = searchQuery.toLowerCase().trim()
+        filtered = filtered.filter(q => {
+          const searchInTags = (q.tags || []).some(tag => tag.toLowerCase().includes(query))
+          const searchInTitle = q.question_text.toLowerCase().includes(query)
+          const searchInAuthor = q.name.toLowerCase().includes(query)
+          const searchInBranch = q.branch.toLowerCase().includes(query)
+          const searchInSemester = (`sem ${q.semester}`).toLowerCase().includes(query)
+          return searchInTags || searchInTitle || searchInAuthor || searchInBranch || searchInSemester
+        })
+      }
+
       // Apply tag filter if selectedTag is present
       if (selectedTag) {
-        filtered = filtered.filter(q => q.tags && q.tags.includes(selectedTag))
+        filtered = filtered.filter(q => {
+          const matchesBranch = q.branch.toLowerCase() === selectedTag.toLowerCase()
+          const matchesSemester = (`sem ${q.semester}`).toLowerCase() === selectedTag.toLowerCase()
+          const matchesTags = (q.tags || []).some(tag => tag.toLowerCase() === selectedTag.toLowerCase())
+          return matchesBranch || matchesSemester || matchesTags
+        })
       }
 
       // Apply sorting
       const sorted = sortQuestions(filtered, sortBy)
       setQuestions(sorted)
     }
-  }, [allQuestions, sortBy, selectedTag])
+  }, [allQuestions, sortBy, selectedTag, searchQuery])
 
   useEffect(() => {
     fetchQuestions()
@@ -372,13 +392,6 @@ export default function Community() {
     return new Date(dateStr).toLocaleDateString()
   }
 
-  // Get all unique tags from all questions
-  const uniqueTags = Array.from(
-    new Set(
-      allQuestions.flatMap(q => q.tags || [])
-    )
-  ).sort()
-
   return (
     <div style={{ background: 'var(--bg)' }}>
 
@@ -570,37 +583,35 @@ export default function Community() {
           <div style={{
             marginBottom: '1.5rem',
             display: 'flex',
-            justifyContent: 'flex-end',
-            gap: '0.75rem',
-            flexWrap: 'wrap',
+            flexDirection: 'column',
+            gap: '0.75rem'
           }}>
-            {uniqueTags.length > 0 && (
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              placeholder="Search questions..."
+              style={inputStyle}
+            />
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', flexWrap: 'wrap' }}>
               <select
                 value={selectedTag || ''}
                 onChange={e => setSelectedTag(e.target.value || null)}
-                style={{
-                  ...inputStyle,
-                  width: 'auto',
-                  minWidth: '140px',
-                }}
+                style={{ ...inputStyle, width: 'auto', minWidth: '140px' }}
               >
                 <option value="">All Tags</option>
-                {uniqueTags.map(tag => <option key={tag} value={tag}>{tag}</option>)}
+                {ALLOWED_TAGS.map(tag => <option key={tag} value={tag}>{tag}</option>)}
               </select>
-            )}
-            <select
-              value={sortBy}
-              onChange={e => setSortBy(e.target.value)}
-              style={{
-                ...inputStyle,
-                width: 'auto',
-                minWidth: '180px',
-              }}
-            >
-              <option value="newest">Newest</option>
-              <option value="most_upvoted">Most Upvoted</option>
-              <option value="unanswered">Unanswered</option>
-            </select>
+              <select
+                value={sortBy}
+                onChange={e => setSortBy(e.target.value)}
+                style={{ ...inputStyle, width: 'auto', minWidth: '180px' }}
+              >
+                <option value="newest">Newest</option>
+                <option value="most_upvoted">Most Upvoted</option>
+                <option value="unanswered">Unanswered</option>
+              </select>
+            </div>
           </div>
         )}
 
@@ -693,10 +704,26 @@ export default function Community() {
                   }}
                 >
                   <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
-                    <span style={tagStyle}>{q.branch}</span>
-                    <span style={tagStyle}>Sem {q.semester}</span>
+                    <span
+                      onClick={(e) => { e.stopPropagation(); setSelectedTag(q.branch) }}
+                      style={{ ...tagStyle, cursor: 'pointer' }}
+                    >
+                      {q.branch}
+                    </span>
+                    <span
+                      onClick={(e) => { e.stopPropagation(); setSelectedTag(`SEM ${q.semester}`) }}
+                      style={{ ...tagStyle, cursor: 'pointer' }}
+                    >
+                      Sem {q.semester}
+                    </span>
                     {q.tags && q.tags.length > 0 && q.tags.map(tag => (
-                      <span key={tag} style={tagStyle}>{tag}</span>
+                      <span
+                        key={tag}
+                        onClick={(e) => { e.stopPropagation(); setSelectedTag(tag) }}
+                        style={{ ...tagStyle, cursor: 'pointer' }}
+                      >
+                        {tag}
+                      </span>
                     ))}
                     <span style={{
                       fontFamily: 'var(--font-mono)',
@@ -749,7 +776,7 @@ export default function Community() {
                           opacity: votedQuestionIds.includes(q.id) ? 0.7 : 1,
                         }}
                       >
-                        <ArrowBigUp 
+                        <ThumbsUp 
                           size={14} 
                           color="var(--accent)" 
                           fill={votedQuestionIds.includes(q.id) ? 'var(--accent)' : 'none'}
@@ -761,25 +788,39 @@ export default function Community() {
                           letterSpacing: '0.06em',
                           textTransform: 'uppercase',
                         }}>
-                          {q.upvote_count || 0}
+                          {q.upvote_count || 0} votes
                         </span>
                       </button>
                     </div>
 
-                    <span style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '0.4rem',
-                      fontFamily: 'var(--font-mono)',
-                      fontSize: '0.7rem',
-                      letterSpacing: '0.06em',
-                      textTransform: 'uppercase',
-                      color: 'var(--accent)',
-                    }}>
-                      <MessageCircle size={13} />
-                      {expanded === q.id ? 'Hide answers' : 'View answers'}
-                      {expanded === q.id ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
-                    </span>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.25rem' }}>
+                      <span style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '0.3rem',
+                        fontFamily: 'var(--font-mono)',
+                        fontSize: '0.7rem',
+                        letterSpacing: '0.06em',
+                        textTransform: 'uppercase',
+                        color: 'var(--accent)',
+                      }}>
+                        <MessageCircle size={13} />
+                        {(q.answer_count || 0) === 0 ? 'No Answers' : `${q.answer_count || 0} Answers`}
+                      </span>
+                      <span style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '0.4rem',
+                        fontFamily: 'var(--font-mono)',
+                        fontSize: '0.7rem',
+                        letterSpacing: '0.06em',
+                        textTransform: 'uppercase',
+                        color: 'var(--accent)',
+                      }}>
+                        {expanded === q.id ? 'Hide answers' : 'View answers'}
+                        {expanded === q.id ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
+                      </span>
+                    </div>
                   </div>
                 </div>
 
