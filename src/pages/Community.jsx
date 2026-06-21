@@ -20,7 +20,9 @@ export default function Community() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [sortBy, setSortBy] = useState('newest')
-  const [selectedTag, setSelectedTag] = useState(null)
+  const [selectedBranch, setSelectedBranch] = useState(null)
+  const [selectedSemester, setSelectedSemester] = useState(null)
+  const [selectedTopic, setSelectedTopic] = useState(null)
   const [searchQuery, setSearchQuery] = useState('')
 
   // Track voted question IDs locally for duplicate prevention
@@ -57,7 +59,7 @@ export default function Community() {
     localStorage.setItem('community-voted-questions', JSON.stringify(votedQuestionIds))
   }, [votedQuestionIds])
 
-  // Apply filters and sorting whenever allQuestions, sortBy, selectedTag, or searchQuery change
+  // Apply filters and sorting whenever allQuestions, sortBy, selectedBranch, selectedSemester, selectedTopic, or searchQuery change
   useEffect(() => {
     if (allQuestions.length > 0) {
       let filtered = [...allQuestions]
@@ -65,6 +67,22 @@ export default function Community() {
       // Apply unanswered filter if sortBy is unanswered
       if (sortBy === 'unanswered') {
         filtered = filtered.filter(q => (q.answer_count || 0) === 0)
+      }
+
+      // Apply branch filter
+      if (selectedBranch) {
+        filtered = filtered.filter(q => q.branch === selectedBranch)
+      }
+
+      // Apply semester filter
+      if (selectedSemester) {
+        const semNumber = parseInt(selectedSemester.replace('SEM', ''))
+        filtered = filtered.filter(q => q.semester === semNumber)
+      }
+
+      // Apply topic filter
+      if (selectedTopic) {
+        filtered = filtered.filter(q => (q.tags || []).includes(selectedTopic))
       }
 
       // Apply search filter
@@ -78,21 +96,11 @@ export default function Community() {
         })
       }
 
-      // Apply tag filter if selectedTag is present
-      if (selectedTag) {
-        filtered = filtered.filter(q => {
-          const matchesBranch = q.branch.toLowerCase() === selectedTag.toLowerCase()
-          const matchesSemester = (`SEM${q.semester}`).toLowerCase() === selectedTag.toLowerCase()
-          const matchesTags = (q.tags || []).some(tag => tag.toLowerCase() === selectedTag.toLowerCase())
-          return matchesBranch || matchesSemester || matchesTags
-        })
-      }
-
       // Apply sorting
       const sorted = sortQuestions(filtered, sortBy)
       setQuestions(sorted)
     }
-  }, [allQuestions, sortBy, selectedTag, searchQuery])
+  }, [allQuestions, sortBy, selectedBranch, selectedSemester, selectedTopic, searchQuery])
 
   useEffect(() => {
     fetchQuestions()
@@ -631,20 +639,28 @@ export default function Community() {
             />
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', flexWrap: 'wrap' }}>
               <select
-                value={selectedTag || ''}
-                onChange={e => setSelectedTag(e.target.value || null)}
-                style={{ ...inputStyle, width: 'auto', minWidth: '140px' }}
+                value={selectedBranch || ''}
+                onChange={e => setSelectedBranch(e.target.value || null)}
+                style={{ ...inputStyle, width: 'auto', minWidth: '130px' }}
               >
-                <option value="">All Tags</option>
-                <optgroup label="Branches">
-                  {ORGANIZED_TAGS.branches.map(tag => <option key={tag} value={tag}>{tag}</option>)}
-                </optgroup>
-                <optgroup label="Semesters">
-                  {ORGANIZED_TAGS.semesters.map(tag => <option key={tag} value={tag}>{tag}</option>)}
-                </optgroup>
-                <optgroup label="Topics">
-                  {ORGANIZED_TAGS.topics.map(tag => <option key={tag} value={tag}>{tag}</option>)}
-                </optgroup>
+                <option value="">All Branches</option>
+                {['CS', 'IT', 'AIDS', 'AIML', 'DS', 'ENTC', 'Electrical', 'Electronics', 'Mechanical'].map(tag => <option key={tag} value={tag}>{tag}</option>)}
+              </select>
+              <select
+                value={selectedSemester || ''}
+                onChange={e => setSelectedSemester(e.target.value || null)}
+                style={{ ...inputStyle, width: 'auto', minWidth: '130px' }}
+              >
+                <option value="">All Semesters</option>
+                {['SEM1', 'SEM2', 'SEM3', 'SEM4', 'SEM5', 'SEM6'].map(tag => <option key={tag} value={tag}>{tag}</option>)}
+              </select>
+              <select
+                value={selectedTopic || ''}
+                onChange={e => setSelectedTopic(e.target.value || null)}
+                style={{ ...inputStyle, width: 'auto', minWidth: '130px' }}
+              >
+                <option value="">All Topics</option>
+                {TOPIC_CHIPS.map(tag => <option key={tag} value={tag}>{tag}</option>)}
               </select>
               <select
                 value={sortBy}
@@ -749,13 +765,13 @@ export default function Community() {
                 >
                   <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
                     <span
-                      onClick={(e) => { e.stopPropagation(); setSelectedTag(q.branch) }}
+                      onClick={(e) => { e.stopPropagation(); setSelectedBranch(q.branch) }}
                       style={{ ...tagStyle, cursor: 'pointer' }}
                     >
                       {q.branch}
                     </span>
                     <span
-                      onClick={(e) => { e.stopPropagation(); setSelectedTag(`SEM${q.semester}`) }}
+                      onClick={(e) => { e.stopPropagation(); setSelectedSemester(`SEM${q.semester}`) }}
                       style={{ ...tagStyle, cursor: 'pointer' }}
                     >
                       SEM{q.semester}
@@ -763,7 +779,7 @@ export default function Community() {
                     {q.tags && q.tags.length > 0 && q.tags.map(tag => (
                       <span
                         key={tag}
-                        onClick={(e) => { e.stopPropagation(); setSelectedTag(tag) }}
+                        onClick={(e) => { e.stopPropagation(); setSelectedTopic(tag) }}
                         style={{ ...tagStyle, cursor: 'pointer' }}
                       >
                         {tag}
