@@ -5,9 +5,14 @@ import {
 } from 'lucide-react'
 import { supabase, isMockMode } from '../lib/supabase'
 
-const BRANCHES = ['CS', 'IT', 'Mech', 'Civil', 'Elec', 'ETC']
+const BRANCHES = ['CS', 'IT', 'AIDS', 'AIML', 'DS', 'ENTC', 'Electrical', 'Electronics', 'Mechanical', 'Civil', 'Chemical', 'Automobile', 'Instrumentation', 'Production', 'Robotics', 'Textile']
 const SEMESTERS = [1, 2, 3, 4, 5, 6]
-const ALLOWED_TAGS = ['CS', 'IT', 'MECH', 'ENTC', 'SEM 1', 'SEM 2', 'SEM 3', 'SEM 4', 'SEM 5', 'SEM 6', 'DSA', 'Placements', 'Web Dev', 'Internship', 'DBMS', 'OS']
+const TOPIC_CHIPS = ['DSA', 'Placements', 'Internship', 'Web Dev', 'App Dev', 'DBMS', 'OS', 'CN', 'Java', 'Python', 'C++', 'React', 'AI', 'ML', 'Data Science', 'Projects', 'Resume', 'Interview', 'LeetCode', 'Cyber Security', 'Cloud']
+const ORGANIZED_TAGS = {
+  branches: ['CS', 'IT', 'AIDS', 'AIML', 'DS', 'ENTC', 'Electrical', 'Mechanical', 'Civil'],
+  semesters: ['SEM1', 'SEM2', 'SEM3', 'SEM4', 'SEM5', 'SEM6'],
+  topics: ['DSA', 'Placements', 'Internship', 'Web Dev', 'DBMS', 'OS', 'CN', 'Java', 'Python', 'React', 'AI', 'ML', 'Projects', 'Resume', 'Interview', 'LeetCode']
+}
 
 export default function Community() {
   const [allQuestions, setAllQuestions] = useState([])
@@ -35,8 +40,9 @@ export default function Community() {
     branch: 'CS',
     semester: 1,
     question_text: '',
-    tags: '',
+    selectedTopics: [],
   })
+  const [formErrors, setFormErrors] = useState({})
 
   const [expanded, setExpanded] = useState(null)
   const [answers, setAnswers] = useState({})
@@ -68,9 +74,7 @@ export default function Community() {
           const searchInTags = (q.tags || []).some(tag => tag.toLowerCase().includes(query))
           const searchInTitle = q.question_text.toLowerCase().includes(query)
           const searchInAuthor = q.name.toLowerCase().includes(query)
-          const searchInBranch = q.branch.toLowerCase().includes(query)
-          const searchInSemester = (`sem ${q.semester}`).toLowerCase().includes(query)
-          return searchInTags || searchInTitle || searchInAuthor || searchInBranch || searchInSemester
+          return searchInTags || searchInTitle || searchInAuthor
         })
       }
 
@@ -78,7 +82,7 @@ export default function Community() {
       if (selectedTag) {
         filtered = filtered.filter(q => {
           const matchesBranch = q.branch.toLowerCase() === selectedTag.toLowerCase()
-          const matchesSemester = (`sem ${q.semester}`).toLowerCase() === selectedTag.toLowerCase()
+          const matchesSemester = (`SEM${q.semester}`).toLowerCase() === selectedTag.toLowerCase()
           const matchesTags = (q.tags || []).some(tag => tag.toLowerCase() === selectedTag.toLowerCase())
           return matchesBranch || matchesSemester || matchesTags
         })
@@ -142,11 +146,11 @@ export default function Community() {
       {
         id: 3,
         name: "Ananya M.",
-        branch: "Mech",
+        branch: "Mechanical",
         semester: 6,
         question_text: "How to get an internship in core mechanical?",
         upvote_count: 5,
-        tags: ["Internship", "Core"],
+        tags: ["Internship", "Projects"],
         answer_count: 0,
         created_at: new Date(Date.now() - 259200000).toISOString()
       }
@@ -257,12 +261,23 @@ export default function Community() {
 
   async function handleSubmitQuestion(e) {
     e.preventDefault()
-    if (!form.name.trim() || !form.question_text.trim()) return
+    
+    // Validate
+    const errors = {}
+    if (!form.name.trim()) errors.name = 'Name is required'
+    if (!form.branch) errors.branch = 'Branch is required'
+    if (!form.semester) errors.semester = 'Semester is required'
+    if (!form.question_text.trim()) errors.question_text = 'Question is required'
+    else if (form.question_text.trim().length < 10) errors.question_text = 'Question must be at least 10 characters'
+    if (form.selectedTopics.length === 0) errors.selectedTopics = 'Please select at least one topic'
 
-    const tagsArray = form.tags
-      .split(',')
-      .map(t => t.trim())
-      .filter(t => t.length > 0)
+    if (Object.keys(errors).length > 0) {
+      setFormErrors(errors)
+      return
+    }
+    setFormErrors({})
+
+    const tagsArray = form.selectedTopics
 
     setSubmitting(true)
     const newQuestion = {
@@ -279,7 +294,7 @@ export default function Community() {
 
     if (isMockMode) {
       setAllQuestions(prev => [newQuestion, ...prev])
-      setForm({ name: '', branch: 'CS', semester: 1, question_text: '', tags: '' })
+      setForm({ name: '', branch: 'CS', semester: 1, question_text: '', selectedTopics: [] })
       setShowForm(false)
       setSubmitting(false)
       return
@@ -301,16 +316,16 @@ export default function Community() {
 
       if (!error && data) {
         setAllQuestions(prev => [data[0], ...prev])
-        setForm({ name: '', branch: 'CS', semester: 1, question_text: '', tags: '' })
+        setForm({ name: '', branch: 'CS', semester: 1, question_text: '', selectedTopics: [] })
         setShowForm(false)
       } else if (error) {
         setAllQuestions(prev => [newQuestion, ...prev])
-        setForm({ name: '', branch: 'CS', semester: 1, question_text: '', tags: '' })
+        setForm({ name: '', branch: 'CS', semester: 1, question_text: '', selectedTopics: [] })
         setShowForm(false)
       }
     } catch {
       setAllQuestions(prev => [newQuestion, ...prev])
-      setForm({ name: '', branch: 'CS', semester: 1, question_text: '', tags: '' })
+      setForm({ name: '', branch: 'CS', semester: 1, question_text: '', selectedTopics: [] })
       setShowForm(false)
     } finally {
       setSubmitting(false)
@@ -512,9 +527,9 @@ export default function Community() {
                   value={form.name}
                   onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
                   placeholder="e.g. Priya S."
-                  required
                   style={inputStyle}
                 />
+                {formErrors.name && <p style={{ color: 'var(--accent)', fontSize: '0.75rem', marginTop: '0.25rem' }}>{formErrors.name}</p>}
               </div>
               <div style={{ flex: '0 0 110px' }}>
                 <label style={labelStyle}>Branch</label>
@@ -525,6 +540,7 @@ export default function Community() {
                 >
                   {BRANCHES.map(b => <option key={b} value={b}>{b}</option>)}
                 </select>
+                {formErrors.branch && <p style={{ color: 'var(--accent)', fontSize: '0.75rem', marginTop: '0.25rem' }}>{formErrors.branch}</p>}
               </div>
               <div style={{ flex: '0 0 100px' }}>
                 <label style={labelStyle}>Semester</label>
@@ -535,6 +551,7 @@ export default function Community() {
                 >
                   {SEMESTERS.map(s => <option key={s} value={s}>Sem {s}</option>)}
                 </select>
+                {formErrors.semester && <p style={{ color: 'var(--accent)', fontSize: '0.75rem', marginTop: '0.25rem' }}>{formErrors.semester}</p>}
               </div>
             </div>
 
@@ -544,21 +561,40 @@ export default function Community() {
                 value={form.question_text}
                 onChange={e => setForm(f => ({ ...f, question_text: e.target.value }))}
                 placeholder="Ask anything — about subjects, projects, internships, placements..."
-                required
                 rows={4}
                 style={{ ...inputStyle, resize: 'vertical', fontFamily: 'var(--font-body)' }}
               />
+              {formErrors.question_text && <p style={{ color: 'var(--accent)', fontSize: '0.75rem', marginTop: '0.25rem' }}>{formErrors.question_text}</p>}
             </div>
 
             <div>
-              <label style={labelStyle}>Tags (comma-separated)</label>
-              <input
-                type="text"
-                value={form.tags}
-                onChange={e => setForm(f => ({ ...f, tags: e.target.value }))}
-                placeholder="e.g. DSA, Internship, Placements"
-                style={inputStyle}
-              />
+              <label style={labelStyle}>Select topics</label>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                {TOPIC_CHIPS.map(topic => (
+                  <button
+                    key={topic}
+                    type="button"
+                    onClick={() => {
+                      setForm(f => ({
+                        ...f,
+                        selectedTopics: f.selectedTopics.includes(topic) 
+                          ? f.selectedTopics.filter(t => t !== topic) 
+                          : [...f.selectedTopics, topic]
+                      }))
+                    }}
+                    style={{
+                      ...tagStyle,
+                      cursor: 'pointer',
+                      background: form.selectedTopics.includes(topic) 
+                        ? 'rgba(232, 69, 60, 0.3)' 
+                        : 'rgba(232, 69, 60, 0.1)'
+                    }}
+                  >
+                    {topic}
+                  </button>
+                ))}
+              </div>
+              {formErrors.selectedTopics && <p style={{ color: 'var(--accent)', fontSize: '0.75rem', marginTop: '0.5rem' }}>{formErrors.selectedTopics}</p>}
             </div>
 
             <button
@@ -600,7 +636,15 @@ export default function Community() {
                 style={{ ...inputStyle, width: 'auto', minWidth: '140px' }}
               >
                 <option value="">All Tags</option>
-                {ALLOWED_TAGS.map(tag => <option key={tag} value={tag}>{tag}</option>)}
+                <optgroup label="Branches">
+                  {ORGANIZED_TAGS.branches.map(tag => <option key={tag} value={tag}>{tag}</option>)}
+                </optgroup>
+                <optgroup label="Semesters">
+                  {ORGANIZED_TAGS.semesters.map(tag => <option key={tag} value={tag}>{tag}</option>)}
+                </optgroup>
+                <optgroup label="Topics">
+                  {ORGANIZED_TAGS.topics.map(tag => <option key={tag} value={tag}>{tag}</option>)}
+                </optgroup>
               </select>
               <select
                 value={sortBy}
@@ -711,10 +755,10 @@ export default function Community() {
                       {q.branch}
                     </span>
                     <span
-                      onClick={(e) => { e.stopPropagation(); setSelectedTag(`SEM ${q.semester}`) }}
+                      onClick={(e) => { e.stopPropagation(); setSelectedTag(`SEM${q.semester}`) }}
                       style={{ ...tagStyle, cursor: 'pointer' }}
                     >
-                      Sem {q.semester}
+                      SEM{q.semester}
                     </span>
                     {q.tags && q.tags.length > 0 && q.tags.map(tag => (
                       <span
