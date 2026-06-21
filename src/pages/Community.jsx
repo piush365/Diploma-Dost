@@ -14,6 +14,7 @@ export default function Community() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [sortBy, setSortBy] = useState('newest')
+  const [selectedTag, setSelectedTag] = useState(null)
 
   // Track voted question IDs locally for duplicate prevention
   const [votedQuestionIds, setVotedQuestionIds] = useState(() => {
@@ -48,7 +49,7 @@ export default function Community() {
     localStorage.setItem('community-voted-questions', JSON.stringify(votedQuestionIds))
   }, [votedQuestionIds])
 
-  // Apply filters and sorting whenever allQuestions, sortBy, or filters change
+  // Apply filters and sorting whenever allQuestions, sortBy, or selectedTag change
   useEffect(() => {
     if (allQuestions.length > 0) {
       let filtered = [...allQuestions]
@@ -58,11 +59,16 @@ export default function Community() {
         filtered = filtered.filter(q => (q.answer_count || 0) === 0)
       }
 
+      // Apply tag filter if selectedTag is present
+      if (selectedTag) {
+        filtered = filtered.filter(q => q.tags && q.tags.includes(selectedTag))
+      }
+
       // Apply sorting
       const sorted = sortQuestions(filtered, sortBy)
       setQuestions(sorted)
     }
-  }, [allQuestions, sortBy])
+  }, [allQuestions, sortBy, selectedTag])
 
   useEffect(() => {
     fetchQuestions()
@@ -366,6 +372,13 @@ export default function Community() {
     return new Date(dateStr).toLocaleDateString()
   }
 
+  // Get all unique tags from all questions
+  const uniqueTags = Array.from(
+    new Set(
+      allQuestions.flatMap(q => q.tags || [])
+    )
+  ).sort()
+
   return (
     <div style={{ background: 'var(--bg)' }}>
 
@@ -558,7 +571,23 @@ export default function Community() {
             marginBottom: '1.5rem',
             display: 'flex',
             justifyContent: 'flex-end',
+            gap: '0.75rem',
+            flexWrap: 'wrap',
           }}>
+            {uniqueTags.length > 0 && (
+              <select
+                value={selectedTag || ''}
+                onChange={e => setSelectedTag(e.target.value || null)}
+                style={{
+                  ...inputStyle,
+                  width: 'auto',
+                  minWidth: '140px',
+                }}
+              >
+                <option value="">All Tags</option>
+                {uniqueTags.map(tag => <option key={tag} value={tag}>{tag}</option>)}
+              </select>
+            )}
             <select
               value={sortBy}
               onChange={e => setSortBy(e.target.value)}
