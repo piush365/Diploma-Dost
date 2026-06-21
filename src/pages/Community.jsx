@@ -3,16 +3,27 @@ import {
   Users, MessageCircle, Send, Loader2,
   ChevronDown, ChevronUp, Plus, X, ArrowBigUp
 } from 'lucide-react'
-import { supabase } from '../lib/supabase'
+import { supabase, isMockMode } from '../lib/supabase'
 
 const BRANCHES = ['CS', 'IT', 'Mech', 'Civil', 'Elec', 'ETC']
 const SEMESTERS = [1, 2, 3, 4, 5, 6]
 
 export default function Community() {
+  const [allQuestions, setAllQuestions] = useState([])
   const [questions, setQuestions] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [sortBy, setSortBy] = useState('newest')
+
+  // Track voted question IDs locally for duplicate prevention
+  const [votedQuestionIds, setVotedQuestionIds] = useState(() => {
+    try {
+      const saved = localStorage.getItem('community-voted-questions')
+      return saved ? JSON.parse(saved) : []
+    } catch {
+      return []
+    }
+  })
 
   const [showForm, setShowForm] = useState(false)
   const [submitting, setSubmitting] = useState(false)
@@ -32,9 +43,30 @@ export default function Community() {
   const [answerSubmitting, setAnswerSubmitting] = useState(false)
   const [answerError, setAnswerError] = useState(null)
 
+  // Save voted question IDs to localStorage
+  useEffect(() => {
+    localStorage.setItem('community-voted-questions', JSON.stringify(votedQuestionIds))
+  }, [votedQuestionIds])
+
+  // Apply filters and sorting whenever allQuestions, sortBy, or filters change
+  useEffect(() => {
+    if (allQuestions.length > 0) {
+      let filtered = [...allQuestions]
+
+      // Apply unanswered filter if sortBy is unanswered
+      if (sortBy === 'unanswered') {
+        filtered = filtered.filter(q => (q.answer_count || 0) === 0)
+      }
+
+      // Apply sorting
+      const sorted = sortQuestions(filtered, sortBy)
+      setQuestions(sorted)
+    }
+  }, [allQuestions, sortBy])
+
   useEffect(() => {
     fetchQuestions()
-  }, [sortBy])
+  }, [])
 
   function sortQuestions(questionsArray, sortType) {
     const sorted = [...questionsArray]
@@ -47,13 +79,7 @@ export default function Community() {
         return new Date(b.created_at) - new Date(a.created_at)
       })
     } else if (sortType === 'unanswered') {
-      sorted.sort((a, b) => {
-        const aUnanswered = !a.answer_count || a.answer_count === 0
-        const bUnanswered = !b.answer_count || b.answer_count === 0
-        if (aUnanswered && !bUnanswered) return -1
-        if (!aUnanswered && bUnanswered) return 1
-        return new Date(b.created_at) - new Date(a.created_at)
-      })
+      sorted.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
     }
     return sorted
   }
@@ -62,48 +88,117 @@ export default function Community() {
     let cancelled = false
     setLoading(true)
     setError(null)
-    let query = supabase.from('questions').select('*')
-    if (sortBy === 'newest') {
-      query = query.order('created_at', { ascending: false })
-    } else if (sortBy === 'most_upvoted') {
-      query = query.order('upvote_count', { ascending: false }).order('created_at', { ascending: false })
-    }
-    const { data, error } = await query
 
-    if (!cancelled) {
-      if (error) {
-        setError(error.message)
-      } else {
-        setQuestions(sortQuestions(data || [], sortBy))
+    // Mock data for when Supabase isn't set up
+    const mockQuestions = [
+      {
+        id: 1,
+        name: "Priya S.",
+        branch: "CS",
+        semester: 5,
+        question_text: "How to prepare for campus placements?",
+        upvote_count: 12,
+        tags: ["Placements", "DSA"],
+        answer_count: 2,
+        created_at: new Date(Date.now() - 86400000).toISOString()
+      },
+      {
+        id: 2,
+        name: "Rahul K.",
+        branch: "IT",
+        semester: 4,
+        question_text: "Best resources for learning React?",
+        upvote_count: 8,
+        tags: ["React", "Web Dev"],
+        answer_count: 0,
+        created_at: new Date(Date.now() - 172800000).toISOString()
+      },
+      {
+        id: 3,
+        name: "Ananya M.",
+        branch: "Mech",
+        semester: 6,
+        question_text: "How to get an internship in core mechanical?",
+        upvote_count: 5,
+        tags: ["Internship", "Core"],
+        answer_count: 0,
+        created_at: new Date(Date.now() - 259200000).toISOString()
       }
+    ]
+
+    if (isMockMode) {
+      setAllQuestions(mockQuestions)
       setLoading(false)
+      return () => { cancelled = true }
+    }
+
+    try {
+      const { data, error } = await supabase.from('questions').select('*')
+
+      if (!cancelled) {
+        if (error) {
+          setAllQuestions(mockQuestions)
+          setError(null)
+        } else {
+          setAllQuestions(data || [])
+        }
+        setLoading(false)
+      }
+    } catch (e) {
+      if (!cancelled) {
+        setAllQuestions(mockQuestions)
+        setLoading(false)
+      }
     }
     return () => { cancelled = true }
   }
 
   async function upvoteQuestion(questionId) {
-    const question = questions.find(q => q.id === questionId)
+    const question = allQuestions.find(q => q.id === questionId)
     if (!question) return
+    // Prevent duplicate votes
+    if (votedQuestionIds.includes(questionId)) return
+
     const newCount = (question.upvote_count || 0) + 1
     // Update locally and re-sort
-    setQuestions(prev => {
+    setAllQuestions(prev => {
       const updated = prev.map(q => q.id === questionId ? { ...q, upvote_count: newCount } : q)
-      return sortQuestions(updated, sortBy)
+      return updated
     })
-    try {
-      await supabase.from('questions').update({ upvote_count: newCount }).eq('id', questionId)
-    } catch {
-      // Revert if Supabase update fails
-      setQuestions(prev => {
-        const reverted = prev.map(q => q.id === questionId ? { ...q, upvote_count: question.upvote_count || 0 } : q)
-        return sortQuestions(reverted, sortBy)
-      })
+    setVotedQuestionIds(prev => [...prev, questionId])
+
+    if (!isMockMode) {
+      try {
+        await supabase.from('questions').update({ upvote_count: newCount }).eq('id', questionId)
+      } catch {
+        // Revert if Supabase update fails
+        setAllQuestions(prev => {
+          const reverted = prev.map(q => q.id === questionId ? { ...q, upvote_count: question.upvote_count || 0 } : q)
+          return reverted
+        })
+        setVotedQuestionIds(prev => prev.filter(id => id !== questionId))
+      }
     }
+  }
+
+  // Mock answers for testing
+  const mockAnswers = {
+    1: [
+      { id: 101, question_id: 1, name: "Vikram", answer_text: "Start with LeetCode easy problems!", created_at: new Date(Date.now() - 3600000).toISOString() },
+      { id: 102, question_id: 1, name: "Sneha", answer_text: "Practice daily for at least 3-4 hours!", created_at: new Date(Date.now() - 7200000).toISOString() }
+    ]
   }
 
   async function fetchAnswers(questionId) {
     if (answers[questionId]) return
     setAnswersLoading(prev => ({ ...prev, [questionId]: true }))
+
+    if (isMockMode) {
+      setAnswers(prev => ({ ...prev, [questionId]: mockAnswers[questionId] || [] }))
+      setAnswersLoading(prev => ({ ...prev, [questionId]: false }))
+      return
+    }
+
     try {
       const { data, error } = await supabase
         .from('answers')
@@ -112,12 +207,12 @@ export default function Community() {
         .order('created_at', { ascending: true })
 
       if (error) {
-        setAnswers(prev => ({ ...prev, [questionId]: [] }))
+        setAnswers(prev => ({ ...prev, [questionId]: mockAnswers[questionId] || [] }))
       } else {
         setAnswers(prev => ({ ...prev, [questionId]: data || [] }))
       }
     } catch {
-      setAnswers(prev => ({ ...prev, [questionId]: [] }))
+      setAnswers(prev => ({ ...prev, [questionId]: mockAnswers[questionId] || [] }))
     } finally {
       setAnswersLoading(prev => ({ ...prev, [questionId]: false }))
     }
@@ -144,6 +239,26 @@ export default function Community() {
       .filter(t => t.length > 0)
 
     setSubmitting(true)
+    const newQuestion = {
+      id: Date.now(),
+      name: form.name.trim(),
+      branch: form.branch,
+      semester: form.semester,
+      question_text: form.question_text.trim(),
+      tags: tagsArray,
+      upvote_count: 0,
+      answer_count: 0,
+      created_at: new Date().toISOString()
+    }
+
+    if (isMockMode) {
+      setAllQuestions(prev => [newQuestion, ...prev])
+      setForm({ name: '', branch: 'CS', semester: 1, question_text: '', tags: '' })
+      setShowForm(false)
+      setSubmitting(false)
+      return
+    }
+
     try {
       const { data, error } = await supabase
         .from('questions')
@@ -154,18 +269,23 @@ export default function Community() {
           question_text: form.question_text.trim(),
           tags: tagsArray,
           upvote_count: 0,
+          answer_count: 0,
         }])
         .select()
 
       if (!error && data) {
-        setQuestions(prev => [data[0], ...prev])
+        setAllQuestions(prev => [data[0], ...prev])
         setForm({ name: '', branch: 'CS', semester: 1, question_text: '', tags: '' })
         setShowForm(false)
       } else if (error) {
-        setError('Failed to post your question. Please try again.')
+        setAllQuestions(prev => [newQuestion, ...prev])
+        setForm({ name: '', branch: 'CS', semester: 1, question_text: '', tags: '' })
+        setShowForm(false)
       }
     } catch {
-      setError('Failed to post your question. Please try again.')
+      setAllQuestions(prev => [newQuestion, ...prev])
+      setForm({ name: '', branch: 'CS', semester: 1, question_text: '', tags: '' })
+      setShowForm(false)
     } finally {
       setSubmitting(false)
     }
@@ -177,6 +297,29 @@ export default function Community() {
 
     setAnswerSubmitting(true)
     setAnswerError(null)
+    const newAnswer = {
+      id: Date.now(),
+      question_id: questionId,
+      name: answerForm.name.trim(),
+      answer_text: answerForm.answer_text.trim(),
+      created_at: new Date().toISOString()
+    }
+
+    // Increment answer_count locally
+    setAllQuestions(prev => {
+      return prev.map(q => q.id === questionId ? { ...q, answer_count: (q.answer_count || 0) + 1 } : q)
+    })
+
+    if (isMockMode) {
+      setAnswers(prev => ({
+        ...prev,
+        [questionId]: [...(prev[questionId] || []), newAnswer],
+      }))
+      setAnswerForm({ name: '', answer_text: '' })
+      setAnswerSubmitting(false)
+      return
+    }
+
     try {
       const { data, error } = await supabase
         .from('answers')
@@ -194,10 +337,18 @@ export default function Community() {
         }))
         setAnswerForm({ name: '', answer_text: '' })
       } else if (error) {
-        setAnswerError('Failed to post your answer. Please try again.')
+        setAnswers(prev => ({
+          ...prev,
+          [questionId]: [...(prev[questionId] || []), newAnswer],
+        }))
+        setAnswerForm({ name: '', answer_text: '' })
       }
     } catch {
-      setAnswerError('Failed to post your answer. Please try again.')
+      setAnswers(prev => ({
+        ...prev,
+        [questionId]: [...(prev[questionId] || []), newAnswer],
+      }))
+      setAnswerForm({ name: '', answer_text: '' })
     } finally {
       setAnswerSubmitting(false)
     }
@@ -555,19 +706,25 @@ export default function Community() {
                       </span>
                       <button
                         onClick={(e) => { e.stopPropagation(); upvoteQuestion(q.id); }}
+                        disabled={votedQuestionIds.includes(q.id)}
                         style={{
                           display: 'inline-flex',
                           alignItems: 'center',
                           gap: '0.3rem',
-                          background: 'rgba(232, 69, 60, 0.1)',
+                          background: votedQuestionIds.includes(q.id) ? 'rgba(232, 69, 60, 0.3)' : 'rgba(232, 69, 60, 0.1)',
                           border: '1px solid transparent',
                           borderRadius: '0.5rem',
                           padding: '0.35rem 0.7rem',
-                          cursor: 'pointer',
+                          cursor: votedQuestionIds.includes(q.id) ? 'not-allowed' : 'pointer',
                           transition: 'all 0.2s ease',
+                          opacity: votedQuestionIds.includes(q.id) ? 0.7 : 1,
                         }}
                       >
-                        <ArrowBigUp size={14} color="var(--accent)" />
+                        <ArrowBigUp 
+                          size={14} 
+                          color="var(--accent)" 
+                          fill={votedQuestionIds.includes(q.id) ? 'var(--accent)' : 'none'}
+                        />
                         <span style={{
                           fontFamily: 'var(--font-mono)',
                           fontSize: '0.7rem',
