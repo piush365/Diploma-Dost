@@ -109,9 +109,78 @@ export default function Community() {
   }, [allQuestions, sortBy, selectedBranch, selectedSemester, selectedTopic, searchQuery])
 
   useEffect(() => {
-    // Move cancelled flag inside useEffect
     let cancelled = false
-    fetchQuestions(cancelled)
+
+    async function fetchQuestions() {
+      setLoading(true)
+      setError(null)
+
+      // Mock data for when mock mode is explicitly enabled
+      const mockQuestions = [
+        {
+          id: 1,
+          name: "Priya S.",
+          branch: "CS",
+          semester: 5,
+          question_text: "How to prepare for campus placements?",
+          upvote_count: 12,
+          tags: ["Placements", "DSA"],
+          answer_count: 2,
+          created_at: new Date(Date.now() - 86400000).toISOString()
+        },
+        {
+          id: 2,
+          name: "Rahul K.",
+          branch: "IT",
+          semester: 4,
+          question_text: "Best resources for learning React?",
+          upvote_count: 8,
+          tags: ["React", "Web Dev"],
+          answer_count: 0,
+          created_at: new Date(Date.now() - 172800000).toISOString()
+        },
+        {
+          id: 3,
+          name: "Ananya M.",
+          branch: "Mechanical",
+          semester: 6,
+          question_text: "How to get an internship in core mechanical?",
+          upvote_count: 5,
+          tags: ["Internship", "Projects"],
+          answer_count: 0,
+          created_at: new Date(Date.now() - 259200000).toISOString()
+        }
+      ]
+
+      if (isMockMode) {
+        if (!cancelled) {
+          setAllQuestions(mockQuestions)
+          setLoading(false)
+        }
+        return
+      }
+
+      try {
+        const { data, error } = await supabase.from('questions').select('*')
+
+        if (cancelled) return
+
+        if (error) {
+          setAllQuestions(mockQuestions)
+          setError(null)
+        } else {
+          setAllQuestions(data || [])
+        }
+        setLoading(false)
+      } catch {
+        if (!cancelled) {
+          setAllQuestions(mockQuestions)
+          setLoading(false)
+        }
+      }
+    }
+
+    fetchQuestions()
     return () => { cancelled = true }
   }, [])
 
@@ -131,73 +200,6 @@ export default function Community() {
     return sorted
   }
 
-  async function fetchQuestions(cancelled) {
-    setLoading(true)
-    setError(null)
-
-    // Mock data for when Supabase isn't set up
-    const mockQuestions = [
-      {
-        id: 1,
-        name: "Priya S.",
-        branch: "CS",
-        semester: 5,
-        question_text: "How to prepare for campus placements?",
-        upvote_count: 12,
-        tags: ["Placements", "DSA"],
-        answer_count: 2,
-        created_at: new Date(Date.now() - 86400000).toISOString()
-      },
-      {
-        id: 2,
-        name: "Rahul K.",
-        branch: "IT",
-        semester: 4,
-        question_text: "Best resources for learning React?",
-        upvote_count: 8,
-        tags: ["React", "Web Dev"],
-        answer_count: 0,
-        created_at: new Date(Date.now() - 172800000).toISOString()
-      },
-      {
-        id: 3,
-        name: "Ananya M.",
-        branch: "Mechanical",
-        semester: 6,
-        question_text: "How to get an internship in core mechanical?",
-        upvote_count: 5,
-        tags: ["Internship", "Projects"],
-        answer_count: 0,
-        created_at: new Date(Date.now() - 259200000).toISOString()
-      }
-    ]
-
-    if (isMockMode) {
-      setAllQuestions(mockQuestions)
-      setLoading(false)
-      return
-    }
-
-    try {
-      const { data, error } = await supabase.from('questions').select('*')
-
-      if (!cancelled) {
-        if (error) {
-          setAllQuestions(mockQuestions)
-          setError(null)
-        } else {
-          setAllQuestions(data || [])
-        }
-        setLoading(false)
-      }
-    } catch (e) {
-      if (!cancelled) {
-        setAllQuestions(mockQuestions)
-        setLoading(false)
-      }
-    }
-  }
-
   async function upvoteQuestion(questionId) {
     const question = allQuestions.find(q => q.id === questionId)
     if (!question) return
@@ -213,16 +215,18 @@ export default function Community() {
     setVotedQuestionIds(prev => [...prev, questionId])
 
     if (!isMockMode) {
-      try {
-        const { error } = await supabase.from('questions').update({ upvote_count: newCount }).eq('id', questionId)
-        if (error) throw error
-      } catch {
-        // Revert if Supabase update fails
+      const revertOptimisticUpdate = () => {
         setAllQuestions(prev => {
-          const reverted = prev.map(q => q.id === questionId ? { ...q, upvote_count: question.upvote_count || 0 } : q)
-          return reverted
+          return prev.map(q => q.id === questionId ? { ...q, upvote_count: question.upvote_count || 0 } : q)
         })
         setVotedQuestionIds(prev => prev.filter(id => id !== questionId))
+      }
+
+      try {
+        const { error } = await supabase.from('questions').update({ upvote_count: newCount }).eq('id', questionId)
+        if (error) revertOptimisticUpdate()
+      } catch {
+        revertOptimisticUpdate()
       }
     }
   }
