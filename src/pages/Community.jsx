@@ -3,16 +3,13 @@ import {
   Users, MessageCircle, Send, Loader2,
   ChevronDown, ChevronUp, Plus, X, ArrowBigUp, ThumbsUp
 } from 'lucide-react'
-import { supabase, isMockMode } from '../lib/supabase'
+import { supabase } from '../lib/supabase'
+import { BRANCHES } from '../data/branches'
 
-const BRANCHES = ['CS', 'IT', 'AIDS', 'AIML', 'DS', 'ENTC', 'Electrical', 'Electronics', 'Mechanical', 'Civil', 'Chemical', 'Automobile', 'Instrumentation', 'Production', 'Robotics', 'Textile']
 const SEMESTERS = [1, 2, 3, 4, 5, 6]
 const TOPIC_CHIPS = ['DSA', 'Placements', 'Internship', 'Web Dev', 'App Dev', 'DBMS', 'OS', 'CN', 'Java', 'Python', 'C++', 'React', 'AI', 'ML', 'Data Science', 'Projects', 'Resume', 'Interview', 'LeetCode', 'Cyber Security', 'Cloud']
-const ORGANIZED_TAGS = {
-  branches: ['CS', 'IT', 'AIDS', 'AIML', 'DS', 'ENTC', 'Electrical', 'Mechanical', 'Civil'],
-  semesters: ['SEM1', 'SEM2', 'SEM3', 'SEM4', 'SEM5', 'SEM6'],
-  topics: ['DSA', 'Placements', 'Internship', 'Web Dev', 'DBMS', 'OS', 'CN', 'Java', 'Python', 'React', 'AI', 'ML', 'Projects', 'Resume', 'Interview', 'LeetCode']
-}
+
+const isMockMode = import.meta.env.VITE_MOCK_MODE === 'true'
 
 export default function Community() {
   const [allQuestions, setAllQuestions] = useState([])
@@ -45,6 +42,7 @@ export default function Community() {
     selectedTopics: [],
   })
   const [formErrors, setFormErrors] = useState({})
+  const [submitError, setSubmitError] = useState(null)
 
   const [expanded, setExpanded] = useState(null)
   const [answers, setAnswers] = useState({})
@@ -111,7 +109,10 @@ export default function Community() {
   }, [allQuestions, sortBy, selectedBranch, selectedSemester, selectedTopic, searchQuery])
 
   useEffect(() => {
-    fetchQuestions()
+    // Move cancelled flag inside useEffect
+    let cancelled = false
+    fetchQuestions(cancelled)
+    return () => { cancelled = true }
   }, [])
 
   function sortQuestions(questionsArray, sortType) {
@@ -130,8 +131,7 @@ export default function Community() {
     return sorted
   }
 
-  async function fetchQuestions() {
-    let cancelled = false
+  async function fetchQuestions(cancelled) {
     setLoading(true)
     setError(null)
 
@@ -175,7 +175,7 @@ export default function Community() {
     if (isMockMode) {
       setAllQuestions(mockQuestions)
       setLoading(false)
-      return () => { cancelled = true }
+      return
     }
 
     try {
@@ -196,7 +196,6 @@ export default function Community() {
         setLoading(false)
       }
     }
-    return () => { cancelled = true }
   }
 
   async function upvoteQuestion(questionId) {
@@ -215,7 +214,8 @@ export default function Community() {
 
     if (!isMockMode) {
       try {
-        await supabase.from('questions').update({ upvote_count: newCount }).eq('id', questionId)
+        const { error } = await supabase.from('questions').update({ upvote_count: newCount }).eq('id', questionId)
+        if (error) throw error
       } catch {
         // Revert if Supabase update fails
         setAllQuestions(prev => {
@@ -292,23 +292,24 @@ export default function Community() {
       return
     }
     setFormErrors({})
+    setSubmitError(null)
 
     const tagsArray = form.selectedTopics
 
     setSubmitting(true)
-    const newQuestion = {
-      id: Date.now(),
-      name: form.name.trim(),
-      branch: form.branch,
-      semester: form.semester,
-      question_text: form.question_text.trim(),
-      tags: tagsArray,
-      upvote_count: 0,
-      answer_count: 0,
-      created_at: new Date().toISOString()
-    }
 
     if (isMockMode) {
+      const newQuestion = {
+        id: Date.now(),
+        name: form.name.trim(),
+        branch: form.branch,
+        semester: form.semester,
+        question_text: form.question_text.trim(),
+        tags: tagsArray,
+        upvote_count: 0,
+        answer_count: 0,
+        created_at: new Date().toISOString()
+      }
       setAllQuestions(prev => [newQuestion, ...prev])
       setForm({ name: '', branch: 'CS', semester: 1, question_text: '', selectedTopics: [] })
       setShowForm(false)
@@ -330,19 +331,15 @@ export default function Community() {
         }])
         .select()
 
-      if (!error && data) {
+      if (error) throw error
+      
+      if (data) {
         setAllQuestions(prev => [data[0], ...prev])
         setForm({ name: '', branch: 'CS', semester: 1, question_text: '', selectedTopics: [] })
         setShowForm(false)
-      } else if (error) {
-        setAllQuestions(prev => [newQuestion, ...prev])
-        setForm({ name: '', branch: 'CS', semester: 1, question_text: '', selectedTopics: [] })
-        setShowForm(false)
       }
-    } catch {
-      setAllQuestions(prev => [newQuestion, ...prev])
-      setForm({ name: '', branch: 'CS', semester: 1, question_text: '', selectedTopics: [] })
-      setShowForm(false)
+    } catch (e) {
+      setSubmitError('Failed to submit question, please try again')
     } finally {
       setSubmitting(false)
     }
@@ -612,6 +609,8 @@ export default function Community() {
               </div>
               {formErrors.selectedTopics && <p style={{ color: 'var(--accent)', fontSize: '0.75rem', marginTop: '0.5rem' }}>{formErrors.selectedTopics}</p>}
             </div>
+
+            {submitError && <p style={{ color: 'var(--accent)', fontSize: '0.75rem', marginTop: '0.5rem' }}>{submitError}</p>}
 
             <button
               type="submit"
