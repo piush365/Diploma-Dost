@@ -6,6 +6,8 @@ import ErrorBoundary from './components/ErrorBoundary'
 import ScrollToTop from './components/ScrollToTop'
 import { Loader2 } from 'lucide-react'
 import SpaceMesh from './components/SpaceMesh'
+import { Analytics } from "@vercel/analytics/react"
+import { SpeedInsights } from "@vercel/speed-insights/react"
 
 const Home         = lazy(() => import('./pages/Home'))
 const Resources    = lazy(() => import('./pages/Resources'))
