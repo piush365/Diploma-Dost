@@ -31,6 +31,8 @@ const About        = lazy(() => import('./pages/About'))
 export default function App() {
   return (
     <HashRouter>
+      <Analytics/>
+      <SpeedInsights/>
       <SpaceMesh />
       <div style={{ minHeight: '100vh' }}>
         <ScrollToTop />
