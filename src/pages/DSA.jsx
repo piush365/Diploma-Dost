@@ -2,7 +2,7 @@ import {
   ArrowRight, ExternalLink, BookOpen, Code, Trophy, Zap, Users, Target, Lightbulb, CheckCircle, Star,
   TrendingUp, Layers, MessageSquare
 } from 'lucide-react'
-
+import { useState, useRef, useEffect } from 'react'
 import { FaGithub } from 'react-icons/fa'
 
 const LANGUAGES = [
@@ -43,15 +43,309 @@ const LANGUAGES = [
 ]
 
 const MSBTE_TOPICS = [
-  'Arrays & Strings',
-  'Linked Lists',
-  'Stacks & Queues',
-  'Trees & Graphs',
-  'Sorting Algorithms',
-  'Searching Algorithms',
-  'Recursion & Backtracking',
-  'Dynamic Programming (Intro)',
-]
+  {
+    title: 'Arrays & Strings',
+    problems: [
+      {
+        name: 'Two Sum',
+        difficulty: 'Easy',
+        link: 'https://leetcode.com/problems/two-sum/',
+      },
+      {
+        name: 'Best Time to Buy and Sell Stock',
+        difficulty: 'Easy',
+        link: 'https://leetcode.com/problems/best-time-to-buy-and-sell-stock/',
+      },
+      {
+        name: 'Contains Duplicate',
+        difficulty: 'Easy',
+        link: 'https://leetcode.com/problems/contains-duplicate/',
+      },
+      {
+        name: 'Valid Anagram',
+        difficulty: 'Easy',
+        link: 'https://leetcode.com/problems/valid-anagram/',
+      },
+      {
+        name: 'Product of Array Except Self',
+        difficulty: 'Medium',
+        link: 'https://leetcode.com/problems/product-of-array-except-self/',
+      },
+      {
+        name: 'Maximum Subarray',
+        difficulty: 'Medium',
+        link: 'https://leetcode.com/problems/maximum-subarray/',
+      },
+      {
+        name: 'Longest Substring Without Repeating Characters',
+        difficulty: 'Medium',
+        link: 'https://leetcode.com/problems/longest-substring-without-repeating-characters/',
+      },
+      {
+        name: '3Sum',
+        difficulty: 'Medium',
+        link: 'https://leetcode.com/problems/3sum/',
+      },
+    ],
+  },
+
+  {
+    title: 'Linked Lists',
+    problems: [
+      {
+        name: 'Reverse Linked List',
+        difficulty: 'Easy',
+        link: 'https://leetcode.com/problems/reverse-linked-list/',
+      },
+      {
+        name: 'Merge Two Sorted Lists',
+        difficulty: 'Easy',
+        link: 'https://leetcode.com/problems/merge-two-sorted-lists/',
+      },
+      {
+        name: 'Middle of the Linked List',
+        difficulty: 'Easy',
+        link: 'https://leetcode.com/problems/middle-of-the-linked-list/',
+      },
+      {
+        name: 'Linked List Cycle',
+        difficulty: 'Easy',
+        link: 'https://leetcode.com/problems/linked-list-cycle/',
+      },
+      {
+        name: 'Remove Nth Node From End',
+        difficulty: 'Medium',
+        link: 'https://leetcode.com/problems/remove-nth-node-from-end-of-list/',
+      },
+      {
+        name: 'Add Two Numbers',
+        difficulty: 'Medium',
+        link: 'https://leetcode.com/problems/add-two-numbers/',
+      },
+      {
+        name: 'Reorder List',
+        difficulty: 'Medium',
+        link: 'https://leetcode.com/problems/reorder-list/',
+      },
+      {
+        name: 'Merge k Sorted Lists',
+        difficulty: 'Hard',
+        link: 'https://leetcode.com/problems/merge-k-sorted-lists/',
+      },
+    ],
+  },
+
+  {
+    title: 'Stacks & Queues',
+    problems: [
+      {
+        name: 'Valid Parentheses',
+        difficulty: 'Easy',
+        link: 'https://leetcode.com/problems/valid-parentheses/',
+      },
+      {
+        name: 'Implement Queue using Stacks',
+        difficulty: 'Easy',
+        link: 'https://leetcode.com/problems/implement-queue-using-stacks/',
+      },
+      {
+        name: 'Implement Stack using Queues',
+        difficulty: 'Easy',
+        link: 'https://leetcode.com/problems/implement-stack-using-queues/',
+      },
+      {
+        name: 'Min Stack',
+        difficulty: 'Medium',
+        link: 'https://leetcode.com/problems/min-stack/',
+      },
+      {
+        name: 'Daily Temperatures',
+        difficulty: 'Medium',
+        link: 'https://leetcode.com/problems/daily-temperatures/',
+      },
+      {
+        name: 'Evaluate Reverse Polish Notation',
+        difficulty: 'Medium',
+        link: 'https://leetcode.com/problems/evaluate-reverse-polish-notation/',
+      },
+      {
+        name: 'Sliding Window Maximum',
+        difficulty: 'Hard',
+        link: 'https://leetcode.com/problems/sliding-window-maximum/',
+      },
+    ],
+  },
+
+  {
+    title: 'Trees & Graphs',
+    problems: [
+      {
+        name: 'Maximum Depth of Binary Tree',
+        difficulty: 'Easy',
+        link: 'https://leetcode.com/problems/maximum-depth-of-binary-tree/',
+      },
+      {
+        name: 'Invert Binary Tree',
+        difficulty: 'Easy',
+        link: 'https://leetcode.com/problems/invert-binary-tree/',
+      },
+      {
+        name: 'Same Tree',
+        difficulty: 'Easy',
+        link: 'https://leetcode.com/problems/same-tree/',
+      },
+      {
+        name: 'Binary Tree Level Order Traversal',
+        difficulty: 'Medium',
+        link: 'https://leetcode.com/problems/binary-tree-level-order-traversal/',
+      },
+      {
+        name: 'Validate Binary Search Tree',
+        difficulty: 'Medium',
+        link: 'https://leetcode.com/problems/validate-binary-search-tree/',
+      },
+      {
+        name: 'Number of Islands',
+        difficulty: 'Medium',
+        link: 'https://leetcode.com/problems/number-of-islands/',
+      },
+      {
+        name: 'Clone Graph',
+        difficulty: 'Medium',
+        link: 'https://leetcode.com/problems/clone-graph/',
+      },
+      {
+        name: 'Lowest Common Ancestor of BST',
+        difficulty: 'Medium',
+        link: 'https://leetcode.com/problems/lowest-common-ancestor-of-a-binary-search-tree/',
+      },
+    ],
+  },
+
+  {
+    title: 'Sorting Algorithms',
+    problems: [
+      {
+        name: 'Sort Colors',
+        difficulty: 'Medium',
+        link: 'https://leetcode.com/problems/sort-colors/',
+      },
+      {
+        name: 'Merge Intervals',
+        difficulty: 'Medium',
+        link: 'https://leetcode.com/problems/merge-intervals/',
+      },
+      {
+        name: 'Merge Sorted Array',
+        difficulty: 'Easy',
+        link: 'https://leetcode.com/problems/merge-sorted-array/',
+      },
+      {
+        name: 'Largest Number',
+        difficulty: 'Medium',
+        link: 'https://leetcode.com/problems/largest-number/',
+      },
+    ],
+  },
+
+  {
+    title: 'Searching Algorithms',
+    problems: [
+      {
+        name: 'Binary Search',
+        difficulty: 'Easy',
+        link: 'https://leetcode.com/problems/binary-search/',
+      },
+      {
+        name: 'Search Insert Position',
+        difficulty: 'Easy',
+        link: 'https://leetcode.com/problems/search-insert-position/',
+      },
+      {
+        name: 'Search in Rotated Sorted Array',
+        difficulty: 'Medium',
+        link: 'https://leetcode.com/problems/search-in-rotated-sorted-array/',
+      },
+      {
+        name: 'Find Peak Element',
+        difficulty: 'Medium',
+        link: 'https://leetcode.com/problems/find-peak-element/',
+      },
+    ],
+  },
+
+  {
+    title: 'Recursion & Backtracking',
+    problems: [
+      {
+        name: 'Subsets',
+        difficulty: 'Medium',
+        link: 'https://leetcode.com/problems/subsets/',
+      },
+      {
+        name: 'Permutations',
+        difficulty: 'Medium',
+        link: 'https://leetcode.com/problems/permutations/',
+      },
+      {
+        name: 'Combination Sum',
+        difficulty: 'Medium',
+        link: 'https://leetcode.com/problems/combination-sum/',
+      },
+      {
+        name: 'Generate Parentheses',
+        difficulty: 'Medium',
+        link: 'https://leetcode.com/problems/generate-parentheses/',
+      },
+      {
+        name: 'Word Search',
+        difficulty: 'Medium',
+        link: 'https://leetcode.com/problems/word-search/',
+      },
+      {
+        name: 'N-Queens',
+        difficulty: 'Hard',
+        link: 'https://leetcode.com/problems/n-queens/',
+      },
+    ],
+  },
+
+  {
+    title: 'Dynamic Programming (Intro)',
+    problems: [
+      {
+        name: 'Climbing Stairs',
+        difficulty: 'Easy',
+        link: 'https://leetcode.com/problems/climbing-stairs/',
+      },
+      {
+        name: 'House Robber',
+        difficulty: 'Medium',
+        link: 'https://leetcode.com/problems/house-robber/',
+      },
+      {
+        name: 'Coin Change',
+        difficulty: 'Medium',
+        link: 'https://leetcode.com/problems/coin-change/',
+      },
+      {
+        name: 'Longest Increasing Subsequence',
+        difficulty: 'Medium',
+        link: 'https://leetcode.com/problems/longest-increasing-subsequence/',
+      },
+      {
+        name: 'Longest Common Subsequence',
+        difficulty: 'Medium',
+        link: 'https://leetcode.com/problems/longest-common-subsequence/',
+      },
+      {
+        name: 'Edit Distance',
+        difficulty: 'Hard',
+        link: 'https://leetcode.com/problems/edit-distance/',
+      },
+    ],
+  },
+];
 
 const BEYOND_TOPICS = [
   'Advanced DP',
@@ -270,6 +564,7 @@ const CHECKLIST_ITEMS = [
 ]
 
 export default function DSAPage() {
+  const [selectedTopic, setSelectedTopic] = useState(null)
   return (
     <div style={{ background: 'var(--bg)' }}>
 
@@ -631,29 +926,175 @@ export default function DSAPage() {
             gap: '1rem',
           }}>
             {MSBTE_TOPICS.map((topic) => (
-              <div
-                key={topic}
-                style={{
-                  background: 'var(--surface2)',
-                  border: '1px solid var(--border)',
-                  borderRadius: '0.75rem',
-                  padding: '1rem',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.75rem',
-                }}
-              >
-                <CheckCircle size={18} color="var(--accent-lime)" strokeWidth={1.5} aria-hidden="true" />
-                <span style={{
-                  fontFamily: 'var(--font-body)',
-                  fontSize: '0.9rem',
-                  color: 'var(--text)',
-                }}>
-                  {topic}
-                </span>
-              </div>
-            ))}
+ <div
+  key={topic.title}
+  onClick={() => setSelectedTopic(topic)}
+  style={{
+    background: 'var(--surface2)',
+    border: '1px solid var(--border)',
+    borderRadius: '0.75rem',
+    padding: '1rem',
+    cursor: 'pointer',
+    transition: 'all .2s ease',
+  }}
+  onMouseEnter={e => {
+    e.currentTarget.style.transform = 'translateY(-2px)'
+    e.currentTarget.style.borderColor = 'var(--accent)'
+  }}
+  onMouseLeave={e => {
+    e.currentTarget.style.transform = 'translateY(0)'
+    e.currentTarget.style.borderColor = 'var(--border)'
+  }}
+>
+  <div
+    style={{
+      display: 'flex',
+      alignItems: 'center',
+      gap: '.75rem'
+    }}
+  >
+    <CheckCircle
+      size={18}
+      color="var(--accent-lime)"
+    />
+
+    <h4
+      style={{
+        margin: 0,
+        color: 'var(--text)',
+        fontWeight: 700,
+      }}
+    >
+      {topic.title}
+    </h4>
+  </div>
+</div>
+))}
+ 
           </div>
+          {selectedTopic && (
+  <div
+    onClick={() => setSelectedTopic(null)}
+    style={{
+      position: 'fixed',
+      inset: 0,
+      background: 'rgba(0,0,0,.45)',
+      backdropFilter: 'blur(6px)',
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      zIndex: 999,
+    }}
+  >
+    <div
+      onClick={(e) => e.stopPropagation()}
+      style={{
+        width: 'min(700px, 90vw)',
+        maxHeight: '75vh',
+        overflowY: 'auto',
+        background: 'var(--surface)',
+        border: '1px solid var(--border)',
+        borderRadius: '18px',
+        padding: '2rem',
+      }}
+    >
+     <>
+  <div
+    style={{
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: '1.5rem',
+    }}
+  >
+    <h2
+      style={{
+        margin: 0,
+        color: 'var(--text)',
+      }}
+    >
+      {selectedTopic.title}
+    </h2>
+
+    <button
+      onClick={() => setSelectedTopic(null)}
+      style={{
+        background: 'transparent',
+        border: 'none',
+        color: 'var(--text)',
+        fontSize: '1.5rem',
+        cursor: 'pointer',
+      }}
+    >
+      ×
+    </button>
+  </div>
+
+  <div
+    style={{
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '1rem',
+    }}
+  >
+    {selectedTopic.problems.map((problem) => (
+      <a
+        key={problem.name}
+        href={problem.link}
+        target="_blank"
+        rel="noreferrer"
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          padding: '1rem',
+          border: '1px solid var(--border)',
+          borderRadius: '12px',
+          textDecoration: 'none',
+          background: 'var(--surface2)',
+          transition: '.2s',
+        }}
+      >
+        <div>
+          <div
+            style={{
+              color: 'var(--text)',
+              fontWeight: 600,
+              marginBottom: '.4rem',
+            }}
+          >
+            {problem.name}
+          </div>
+
+          <span
+            style={{
+              padding: '4px 10px',
+              borderRadius: '20px',
+              fontSize: '.75rem',
+              background:
+                problem.difficulty === 'Easy'
+                  ? '#1f7a3d'
+                  : problem.difficulty === 'Medium'
+                  ? '#b7791f'
+                  : '#b83232',
+              color: '#fff',
+            }}
+          >
+            {problem.difficulty}
+          </span>
+        </div>
+
+        <ExternalLink
+          size={18}
+          color="var(--accent)"
+        />
+      </a>
+    ))}
+  </div>
+</>
+    </div>
+  </div>
+)}
         </div>
 
         {/* Beyond MSBTE */}
