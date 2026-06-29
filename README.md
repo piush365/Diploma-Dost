@@ -27,7 +27,7 @@
 [![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?style=flat-square&logo=supabase&logoColor=white)](https://supabase.com)
 [![Three.js](https://img.shields.io/badge/Three.js-000000?style=flat-square&logo=threedotjs&logoColor=white)](https://threejs.org)
 [![PWA](https://img.shields.io/badge/PWA-5A0FC8?style=flat-square&logo=pwa&logoColor=white)](https://web.dev/progressive-web-apps)
-[![n8n](https://img.shields.io/badge/n8n-FFA500)]
+![n8n](https://img.shields.io/badge/n8n-FFA500)
 <br />
 
 </div>
