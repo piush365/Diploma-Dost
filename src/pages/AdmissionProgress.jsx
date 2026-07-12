@@ -1,12 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from '../lib/supabase';
 
-// ─── Google Sheet URL ────────────────────────────────────────────────────────
-// Sheet1 = 2026-27 live data (columns: title, status, date, link, description)
-// Sheet2 = not needed — 2025-26 is hardcoded below as historical reference
-const SHEET_URL =
-  "https://docs.google.com/spreadsheets/d/e/2PACX-1vRysh_-Dh-qWDeK4FtDQUsYO7VU5utKQ8YZvakqAHz4tXc1rnES8fi3ZKtNId_lshYx8HDPTQogUJ0U/pub?output=csv";
-
 // ─── 2025-26 Historical Reference (hardcoded, never changes) ─────────────────
 const LAST_YEAR = [
   // Pre-CAP
@@ -18,7 +12,7 @@ const LAST_YEAR = [
   // CAP Round I
   { title: "CAP Round I – Seat Matrix Display",                date: "31 Jul 2025" },
   { title: "CAP Round I – Option Form Submission",             date: "01 Aug – 03 Aug 2025" },
-  { title: "CAP Round I – Provisional Allotment",              date: "05 Aug 2025" },
+  { title: "CAP Round I – Provisional Allotment",               date: "05 Aug 2025" },
   { title: "CAP Round I – Seat Acceptance",                    date: "06 Aug – 08 Aug 2025" },
   { title: "CAP Round I – Admission Confirmation",             date: "06 Aug – 08 Aug 2025" },
   // CAP Round II
@@ -47,33 +41,6 @@ const LAST_YEAR = [
   { title: "Last Date for Seat Cancellation (Full Refund)",    date: "13 Sep 2025" },
   { title: "Admission Closed – Cut-off Date",                  date: "15 Sep 2025" },
 ];
-
-// ─── CSV Parser ───────────────────────────────────────────────────────────────
-function parseCSV(text) {
-  const lines = text.trim().split("\n");
-  if (lines.length < 2) return [];
-  const headers = splitCSVRow(lines[0]).map((h) => h.trim().replace(/^"|"$/g, ""));
-  return lines.slice(1).map((line) => {
-    const values = splitCSVRow(line);
-    // Always map all headers, defaulting missing columns to ""
-    return Object.fromEntries(
-      headers.map((h, i) => [h, (values[i] ?? "").trim().replace(/^"|"$/g, "")])
-    );
-  });
-}
-
-function splitCSVRow(row) {
-  const values = [];
-  let current = "";
-  let inQuotes = false;
-  for (const char of row) {
-    if (char === '"') { inQuotes = !inQuotes; }
-    else if (char === "," && !inQuotes) { values.push(current); current = ""; }
-    else { current += char; }
-  }
-  values.push(current);
-  return values;
-}
 
 // ─── Status Badge ─────────────────────────────────────────────────────────────
 function StatusBadge({ status }) {
@@ -159,109 +126,6 @@ function TimelineRow({ step, index }) {
   );
 }
 
-// ─── CET Cell Official Schedule (auto-populated by n8n) ──────────────────────
-function OfficialScheduleSection({ rows }) {
-  const [open, setOpen] = useState(false);
-
-  if (rows.length === 0) {
-    return (
-      <div className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl p-5 mb-6 flex items-center gap-4">
-        <span className="h-2 w-2 rounded-full bg-[#f0a843] animate-pulse flex-shrink-0" />
-        <div>
-          <p className="font-['Cabinet_Grotesk'] font-semibold text-[var(--text)] text-sm">
-            Official CET Cell Schedule
-          </p>
-          <p className="font-['General_Sans'] text-xs text-[var(--text-muted)] mt-0.5">
-            Monitoring cetcell.mahacet.org — schedule not published yet. You'll be notified via Telegram when it goes live.
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="bg-[var(--surface)] border border-[#c8f04d]/20 rounded-2xl overflow-hidden mb-6">
-      <button
-        onClick={() => setOpen((v) => !v)}
-        className="w-full flex items-center justify-between p-6 text-left hover:bg-[var(--surface2)] transition-colors"
-      >
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="h-2 w-2 rounded-full bg-[#c8f04d] flex-shrink-0" />
-            <span className="font-['JetBrains_Mono'] text-[0.6rem] uppercase tracking-[0.15em] text-[#c8f04d] font-bold">
-              Auto-scraped from CET Cell
-            </span>
-          </div>
-          <h2 className="font-['Clash_Display'] text-xl font-bold text-[var(--text)]">
-            Official Schedule ({rows.length} activities)
-          </h2>
-        </div>
-        <span
-          className={`font-['JetBrains_Mono'] text-[var(--text-muted)] text-lg transition-transform duration-300 ${open ? "rotate-180" : ""}`}
-        >
-          ↓
-        </span>
-      </button>
-
-      {open && (
-        <div className="px-6 pb-6 border-t border-[var(--border)]">
-          <div className="mt-4 space-y-2">
-            {rows.map((row, i) => (
-              <div
-                key={row.id}
-                className={`flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 rounded-xl border ${
-                  row.status === 'current'
-                    ? 'border-[#c8f04d]/30 bg-[#c8f04d]/10'
-                    : row.status === 'completed'
-                    ? 'border-[#e8453c]/20 bg-[#e8453c]/5'
-                    : 'border-[var(--border)] bg-[var(--surface2)]'
-                }`}
-              >
-                <div className="flex items-center gap-4">
-                  <span className="font-['JetBrains_Mono'] text-[0.6rem] w-5 text-right flex-shrink-0 text-[var(--text-muted)]">
-                    {String(i + 1).padStart(2, '0')}
-                  </span>
-                  <div
-                    className={`h-2.5 w-2.5 rounded-full flex-shrink-0 ${
-                      row.status === 'current' ? 'bg-[#c8f04d] shadow-[0_0_8px_#c8f04d88]' :
-                      row.status === 'completed' ? 'bg-[#e8453c]' : 'bg-[var(--border)]'
-                    }`}
-                  />
-                  <div>
-                    <h3 className="font-['Cabinet_Grotesk'] font-medium text-[var(--text)] text-sm leading-snug">
-                      {row.activity}
-                    </h3>
-                    {row.date_display ? (
-                      <p className="font-['JetBrains_Mono'] text-[0.6rem] text-[var(--text)] opacity-60 mt-0.5 tracking-wide">
-                        {row.date_display}
-                      </p>
-                    ) : null}
-                    {row.round_label ? (
-                      <span className="font-['JetBrains_Mono'] text-[0.55rem] text-[var(--text-muted)] uppercase tracking-wide">
-                        {row.round_label}
-                      </span>
-                    ) : null}
-                  </div>
-                </div>
-                {row.link && (
-                  <a
-                    href={row.link}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="mt-2 sm:mt-0 sm:pl-4 font-['JetBrains_Mono'] text-[0.6rem] uppercase tracking-wider text-[#c8f04d] border border-[#c8f04d]/30 px-2 py-1 rounded hover:bg-[#c8f04d]/10 transition-colors flex-shrink-0"
-                  >
-                    View →
-                  </a>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
 // ─── Main Component ───────────────────────────────────────────────────────────
 export default function AdmissionProgress() {
   const [steps, setSteps]             = useState([]);
@@ -269,39 +133,32 @@ export default function AdmissionProgress() {
   const [error, setError]             = useState(null);
   const [lastUpdated, setLastUpdated] = useState(null);
   const [showLastYear, setShowLastYear] = useState(false);
-  const [officialSchedule, setOfficialSchedule] = useState([]);
 
-  const fetchData = (signal) => {
-    fetch(`${SHEET_URL}&cachebust=${Date.now()}`, signal ? { signal } : {})
-      .then((r) => { if (!r.ok) throw new Error("Failed to fetch sheet"); return r.text(); })
-      .then((csv) => {
-        setSteps(parseCSV(csv));
+  const fetchData = () => {
+    supabase
+      .from('cap_dse_schedule')
+      .select('activity, date_display, link, status, sort_order')
+      .order('sort_order', { ascending: true })
+      .then(({ data, error }) => {
+        if (error) { setError(error.message); setLoading(false); return; }
+        setSteps(
+          (data ?? []).map((row) => ({
+            title: row.activity,
+            date: row.date_display,
+            link: row.link,
+            status: row.status === 'tba' ? '' : row.status,
+          }))
+        );
         setLastUpdated(new Date());
         setLoading(false);
         setError(null);
-      })
-      .catch((err) => {
-        if (err.name === 'AbortError') return;
-        setError(err.message);
-        setLoading(false);
       });
   };
 
   useEffect(() => {
-    const controller = new AbortController();
-    fetchData(controller.signal);
-    const interval = setInterval(() => fetchData(), 10 * 60 * 1000); // refresh every 10 min
-    return () => { controller.abort(); clearInterval(interval); };
-  }, []);
-
-  useEffect(() => {
-    supabase
-      .from('cap_dse_schedule')
-      .select('id, activity, round_label, date_display, start_date, end_date, link, status, sort_order')
-      .order('sort_order', { ascending: true })
-      .then(({ data }) => {
-        if (data) setOfficialSchedule(data);
-      });
+    fetchData();
+    const interval = setInterval(fetchData, 10 * 60 * 1000); // refresh every 10 min
+    return () => clearInterval(interval);
   }, []);
 
   const currentStep     = steps.find((s) => s.status === "current");
@@ -398,11 +255,6 @@ export default function AdmissionProgress() {
           {currentStep.date && (
             <p className="font-['JetBrains_Mono'] text-xs text-[#c8f04d] mb-2 tracking-wide">
               {currentStep.date}
-            </p>
-          )}
-          {currentStep.description && (
-            <p className="font-['General_Sans'] text-sm text-[var(--text-muted)] mb-4">
-              {currentStep.description}
             </p>
           )}
           {currentStep.link && (
@@ -538,9 +390,6 @@ export default function AdmissionProgress() {
           </>
         )}
       </div>
-
-      {/* ── CET Cell Official Schedule (from n8n scraper) ── */}
-      <OfficialScheduleSection rows={officialSchedule} />
 
       {/* ── 2025-26 Reference (collapsible) ── */}
       <div className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl overflow-hidden">
